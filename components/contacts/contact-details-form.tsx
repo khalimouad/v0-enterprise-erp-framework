@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Trash2 } from "lucide-react"
+import { Trash2, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -48,49 +48,45 @@ export function ContactDetailsForm({
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-slate-900">
-      {/* Header Section - Name, ICE, Type, Tags */}
-      <div className="border-b border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-slate-800">
+      {/* Header Section - Name, ICE, Type, Status, Tags */}
+      <div className="border-b-2 border-slate-300 bg-gradient-to-r from-slate-50 to-white px-6 py-4 dark:border-slate-600 dark:from-slate-700 dark:to-slate-800">
         <div className="space-y-4">
-          {/* Name Field */}
-          <div>
-            <Label htmlFor="name" className="text-sm font-medium">
-              Nom du Contact
-            </Label>
-            <Input
-              id="name"
-              value={contact.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Entrez le nom du contact"
-              className="mt-1 bg-white dark:bg-slate-700"
-            />
-          </div>
-
-          {/* ICE, Type, Status - 3 columns on desktop, stack on mobile */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* Name & ICE Row */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="ice" className="text-sm font-medium">
-                Numéro ICE
+              <Label htmlFor="name" className="text-sm font-semibold">
+                Nom du Contact
+              </Label>
+              <Input
+                id="name"
+                value={contact.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                className="mt-2 border-2 border-slate-200 bg-white font-medium dark:border-slate-600"
+              />
+            </div>
+            <div>
+              <Label htmlFor="ice" className="text-sm font-semibold">
+                ICE
               </Label>
               <Input
                 id="ice"
                 value={contact.ice || ""}
                 onChange={(e) => handleChange("ice", e.target.value)}
-                placeholder="Identifiant Client d'Entreprise"
-                className="mt-1 bg-white dark:bg-slate-700"
+                placeholder="XX XXX XXX XXX XXX"
+                className="mt-2 border-2 border-slate-200 bg-white font-mono dark:border-slate-600"
               />
             </div>
+          </div>
+
+          {/* Type & Status Row */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="type" className="text-sm font-medium">
+              <Label htmlFor="type" className="text-sm font-semibold">
                 Type
               </Label>
-              <Select
-                value={contact.type || "customer"}
-                onValueChange={(value) =>
-                  handleChange("type", value as Contact["type"])
-                }
-              >
-                <SelectTrigger className="mt-1 bg-white dark:bg-slate-700">
+              <Select value={contact.type || "customer"} onValueChange={(value) => handleChange("type", value)}>
+                <SelectTrigger className="mt-2 border-2 border-slate-200 bg-white dark:border-slate-600">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -101,22 +97,17 @@ export function ContactDetailsForm({
               </Select>
             </div>
             <div>
-              <Label htmlFor="status" className="text-sm font-medium">
+              <Label htmlFor="status" className="text-sm font-semibold">
                 Statut
               </Label>
-              <Select
-                value={contact.status || "active"}
-                onValueChange={(value) =>
-                  handleChange("status", value as Contact["status"])
-                }
-              >
-                <SelectTrigger className="mt-1 bg-white dark:bg-slate-700">
+              <Select value={contact.status || "prospect"} onValueChange={(value) => handleChange("status", value)}>
+                <SelectTrigger className="mt-2 border-2 border-slate-200 bg-white dark:border-slate-600">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="prospect">Prospect</SelectItem>
                   <SelectItem value="active">Actif</SelectItem>
                   <SelectItem value="inactive">Inactif</SelectItem>
-                  <SelectItem value="prospect">Prospect</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -124,47 +115,33 @@ export function ContactDetailsForm({
 
           {/* Tags */}
           <div>
-            <Label htmlFor="tags" className="text-sm font-medium">
-              Étiquettes
-            </Label>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <Label className="text-sm font-semibold">Étiquettes</Label>
+            <div className="mt-2 flex flex-wrap gap-2 rounded-lg border-2 border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-700">
               {contact.tags?.map((tag) => (
                 <Badge
                   key={tag}
                   variant="secondary"
-                  className="flex items-center gap-2 pr-1"
+                  className="cursor-pointer gap-1 border-2 border-blue-300 bg-blue-100 text-blue-900 hover:bg-blue-200 dark:border-blue-600 dark:bg-blue-900 dark:text-blue-100"
+                  onClick={() => handleRemoveTag(tag)}
                 >
                   {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-300 dark:hover:bg-slate-600"
-                    aria-label={`Supprimer l'étiquette ${tag}`}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                  <Trash2 className="h-3 w-3" />
                 </Badge>
               ))}
             </div>
             <div className="mt-2 flex gap-2">
               <Input
-                id="tags"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault()
                     handleAddTag()
                   }
                 }}
-                placeholder="Ajouter une étiquette et appuyer sur Entrée"
-                className="bg-white dark:bg-slate-700"
+                placeholder="Ajouter une étiquette..."
+                className="border-2 border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddTag}
-              >
+              <Button onClick={handleAddTag} variant="outline" className="border-2 border-slate-200 dark:border-slate-600">
                 Ajouter
               </Button>
             </div>
@@ -172,15 +149,26 @@ export function ContactDetailsForm({
         </div>
       </div>
 
-      {/* Main Content Area with Tabs */}
-      <Tabs defaultValue="general" className="flex flex-1 flex-col overflow-hidden">
-        <TabsList className="border-b bg-slate-50 dark:bg-slate-800">
-          <TabsTrigger value="general">Général</TabsTrigger>
-          <TabsTrigger value="contact">Coordonnées</TabsTrigger>
-          <TabsTrigger value="address">Adresse</TabsTrigger>
-          <TabsTrigger value="tax">Fiscal</TabsTrigger>
-          <TabsTrigger value="company">Entreprise</TabsTrigger>
-        </TabsList>
+      {/* Tabs Section */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs defaultValue="general" className="flex h-full flex-col">
+          <TabsList className="grid w-full grid-cols-5 gap-0 border-b-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 dark:border-slate-600 dark:from-slate-700 dark:to-slate-600">
+            <TabsTrigger value="general" className="text-xs font-semibold md:text-sm">
+              Général
+            </TabsTrigger>
+            <TabsTrigger value="contact" className="text-xs font-semibold md:text-sm">
+              Contact
+            </TabsTrigger>
+            <TabsTrigger value="address" className="text-xs font-semibold md:text-sm">
+              Adresse
+            </TabsTrigger>
+            <TabsTrigger value="tax" className="text-xs font-semibold md:text-sm">
+              Fiscal
+            </TabsTrigger>
+            <TabsTrigger value="company" className="text-xs font-semibold md:text-sm">
+              Entreprise
+            </TabsTrigger>
+          </TabsList>
 
         {/* General Tab */}
         <TabsContent
@@ -596,13 +584,14 @@ export function ContactDetailsForm({
       </Tabs>
 
       {/* Footer with Action Buttons */}
-      <div className="border-t border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800">
-        <div className="flex justify-end gap-2">
+      <div className="border-t-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 px-6 py-4 dark:border-slate-600 dark:from-slate-700 dark:to-slate-800">
+        <div className="flex justify-end gap-3">
           {onCancel && (
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
+              className="border-2 border-slate-300 hover:bg-slate-100 dark:border-slate-500 dark:hover:bg-slate-700"
             >
               Annuler
             </Button>
@@ -611,7 +600,7 @@ export function ContactDetailsForm({
             <Button
               type="button"
               onClick={onSave}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="border-2 border-blue-500 bg-blue-600 font-semibold hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               <Save className="mr-2 h-4 w-4" />
               Enregistrer
