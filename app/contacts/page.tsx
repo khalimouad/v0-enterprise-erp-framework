@@ -235,17 +235,8 @@ export default function ContactsPage() {
   }
 
   const handleCreateContact = () => {
-    const newContact: Contact = {
-      id: `c${Date.now()}`,
-      name: "",
-      email: "",
-      phone: "",
-      initials: "NC",
-      type: "customer",
-      createdAt: new Date().toISOString().split("T")[0],
-      status: "prospect",
-    }
-    setEditingContact(newContact)
+    // Navigate to create page
+    router.push("/contacts/create")
   }
 
   return (

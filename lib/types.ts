@@ -20,6 +20,25 @@ export interface Contact {
   status?: "active" | "inactive" | "prospect"
   industry?: string
   website?: string
+  
+  // Tax & Compliance
+  ice?: string
+  vatSubject?: boolean
+  vatNumber?: string
+  taxRegime?: 'foret' | 'real' | 'simplified'
+  isExport?: boolean
+  isSuspended?: boolean
+  isProvisional?: boolean
+  
+  // Address Fields
+  postalCode?: string
+  quartier?: string
+  region?: string
+  mobile?: string
+  
+  // Financial
+  creditLimit?: number
+  isCreditAllowed?: boolean
 }
 
 export const contactStatusConfig = {
