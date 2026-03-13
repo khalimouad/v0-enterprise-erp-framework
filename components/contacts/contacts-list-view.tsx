@@ -1,0 +1,998 @@
+"use client"
+
+import * as React from "react"
+import {
+  Search,
+  Filter,
+  Columns,
+  Download,
+  Plus,
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Trash2,
+  Copy,
+  Mail,
+  Phone,
+  Star,
+  LayoutGrid,
+  List,
+  Kanban,
+  X,
+  ChevronDown,
+  Check,
+  SlidersHorizontal,
+  Building2,
+  Globe,
+  CreditCard,
+  Calendar,
+  Tag,
+  MapPin,
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { Contact } from "@/lib/types"
+import { contactTypeConfig, contactStatusConfig } from "@/lib/types"
+import type { ColorTheme } from "@/components/erp-header"
+
+type ViewMode = "table" | "cards" | "kanban"
+
+interface ContactsListViewProps {
+  contacts: Contact[]
+  selectedContactId?: string
+  onRowClick: (contact: Contact) => void
+  onEdit: (contact: Contact) => void
+  onCreateContact: () => void
+  colorTheme: ColorTheme
+}
+
+// Column definitions
+interface ColumnDef {
+  id: string
+  label: string
+  visible: boolean
+  width?: string
+}
+
+const defaultColumns: ColumnDef[] = [
+  { id: "name", label: "Name", visible: true, width: "200px" },
+  { id: "email", label: "Email", visible: true },
+  { id: "phone", label: "Phone", visible: true },
+  { id: "location", label: "Location", visible: true },
+  { id: "type", label: "Type", visible: true },
+  { id: "status", label: "Status", visible: true },
+  { id: "industry", label: "Industry", visible: false },
+  { id: "paymentTerms", label: "Payment Terms", visible: false },
+  { id: "currency", label: "Currency", visible: false },
+  { id: "tags", label: "Tags", visible: true },
+  { id: "createdAt", label: "Created", visible: false },
+]
+
+// Filter field definitions
+interface FilterField {
+  id: keyof Contact | "location"
+  label: string
+  type: "text" | "select" | "multiselect"
+  options?: { value: string; label: string }[]
+}
+
+const filterFields: FilterField[] = [
+  { id: "name", label: "Name", type: "text" },
+  { id: "email", label: "Email", type: "text" },
+  { id: "phone", label: "Phone", type: "text" },
+  { id: "type", label: "Type", type: "select", options: [
+    { value: "customer", label: "Customer" },
+    { value: "supplier", label: "Supplier" },
+    { value: "both", label: "Customer & Supplier" },
+  ]},
+  { id: "status", label: "Status", type: "select", options: [
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "prospect", label: "Prospect" },
+  ]},
+  { id: "country", label: "Country", type: "text" },
+  { id: "city", label: "City", type: "text" },
+  { id: "industry", label: "Industry", type: "text" },
+  { id: "paymentTerms", label: "Payment Terms", type: "select", options: [
+    { value: "Immediate", label: "Immediate" },
+    { value: "Net 15 Days", label: "Net 15 Days" },
+    { value: "Net 30 Days", label: "Net 30 Days" },
+    { value: "Net 45 Days", label: "Net 45 Days" },
+    { value: "Net 60 Days", label: "Net 60 Days" },
+  ]},
+  { id: "currency", label: "Currency", type: "select", options: [
+    { value: "USD", label: "USD" },
+    { value: "EUR", label: "EUR" },
+    { value: "GBP", label: "GBP" },
+    { value: "CAD", label: "CAD" },
+    { value: "CNY", label: "CNY" },
+  ]},
+]
+
+interface ActiveFilter {
+  field: string
+  operator: "contains" | "equals" | "startsWith"
+  value: string
+}
+
+// Kanban columns
+const kanbanColumns = [
+  { id: "prospect", label: "Prospects", color: "bg-amber-500" },
+  { id: "active", label: "Active", color: "bg-green-500" },
+  { id: "inactive", label: "Inactive", color: "bg-slate-400" },
+]
+
+export function ContactsListView({
+  contacts,
+  selectedContactId,
+  onRowClick,
+  onEdit,
+  onCreateContact,
+  colorTheme,
+}: ContactsListViewProps) {
+  const [viewMode, setViewMode] = React.useState<ViewMode>("table")
+  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set())
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [columns, setColumns] = React.useState<ColumnDef[]>(defaultColumns)
+  const [activeFilters, setActiveFilters] = React.useState<ActiveFilter[]>([])
+  const [filterPanelOpen, setFilterPanelOpen] = React.useState(false)
+  const [typeFilter, setTypeFilter] = React.useState<string>("all")
+
+  // Apply filters
+  const filteredContacts = React.useMemo(() => {
+    let result = contacts
+
+    // Type filter
+    if (typeFilter !== "all") {
+      result = result.filter((c) => c.type === typeFilter || (typeFilter === "both" && c.type === "both"))
+    }
+
+    // Search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(query) ||
+          c.email.toLowerCase().includes(query) ||
+          c.phone.includes(query) ||
+          c.country?.toLowerCase().includes(query) ||
+          c.city?.toLowerCase().includes(query) ||
+          c.industry?.toLowerCase().includes(query)
+      )
+    }
+
+    // Active filters
+    activeFilters.forEach((filter) => {
+      result = result.filter((c) => {
+        const value = c[filter.field as keyof Contact]
+        if (!value) return false
+        const strValue = String(value).toLowerCase()
+        const filterValue = filter.value.toLowerCase()
+        
+        switch (filter.operator) {
+          case "contains":
+            return strValue.includes(filterValue)
+          case "equals":
+            return strValue === filterValue
+          case "startsWith":
+            return strValue.startsWith(filterValue)
+          default:
+            return true
+        }
+      })
+    })
+
+    return result
+  }, [contacts, typeFilter, searchQuery, activeFilters])
+
+  const toggleColumn = (columnId: string) => {
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === columnId ? { ...col, visible: !col.visible } : col
+      )
+    )
+  }
+
+  const addFilter = (fieldId: string) => {
+    const field = filterFields.find((f) => f.id === fieldId)
+    if (field) {
+      setActiveFilters((prev) => [
+        ...prev,
+        { field: fieldId, operator: "contains", value: "" },
+      ])
+    }
+  }
+
+  const updateFilter = (index: number, updates: Partial<ActiveFilter>) => {
+    setActiveFilters((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, ...updates } : f))
+    )
+  }
+
+  const removeFilter = (index: number) => {
+    setActiveFilters((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const clearAllFilters = () => {
+    setActiveFilters([])
+    setTypeFilter("all")
+    setSearchQuery("")
+  }
+
+  const toggleRow = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedRows((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const toggleAll = () => {
+    if (selectedRows.size === filteredContacts.length) {
+      setSelectedRows(new Set())
+    } else {
+      setSelectedRows(new Set(filteredContacts.map((c) => c.id)))
+    }
+  }
+
+  // Get accent color based on theme
+  const getAccentClass = () => {
+    switch (colorTheme) {
+      case "orange":
+        return "bg-orange-500 text-white hover:bg-orange-600"
+      case "navy":
+        return "bg-blue-700 text-white hover:bg-blue-800"
+      default:
+        return "bg-slate-700 text-white hover:bg-slate-800"
+    }
+  }
+
+  const getAccentTextClass = () => {
+    switch (colorTheme) {
+      case "orange":
+        return "text-orange-600"
+      case "navy":
+        return "text-blue-700"
+      default:
+        return "text-slate-700"
+    }
+  }
+
+  const getAccentBorderClass = () => {
+    switch (colorTheme) {
+      case "orange":
+        return "border-orange-500"
+      case "navy":
+        return "border-blue-700"
+      default:
+        return "border-slate-600"
+    }
+  }
+
+  const getAccentBgClass = () => {
+    switch (colorTheme) {
+      case "orange":
+        return "bg-orange-500/10"
+      case "navy":
+        return "bg-blue-700/10"
+      default:
+        return "bg-slate-600/10"
+    }
+  }
+
+  const visibleColumns = columns.filter((c) => c.visible)
+
+  const typeTabs = [
+    { id: "all", label: "All Contacts" },
+    { id: "customer", label: "Customers" },
+    { id: "supplier", label: "Suppliers" },
+    { id: "both", label: "Partners" },
+  ]
+
+  return (
+    <div className="flex flex-col h-full bg-card">
+      {/* Toolbar */}
+      <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-[300px]">
+          {/* Search */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search contacts..."
+              className="pl-10 bg-muted/50 border-0"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Filters Button */}
+          <Popover open={filterPanelOpen} onOpenChange={setFilterPanelOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("gap-2", activeFilters.length > 0 && getAccentBgClass())}>
+                <Filter className="h-4 w-4" />
+                Filters
+                {activeFilters.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
+                    {activeFilters.length}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0" align="start">
+              <div className="p-3 border-b border-border">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Filters</h4>
+                  {activeFilters.length > 0 && (
+                    <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-7 text-xs">
+                      Clear all
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Active Filters */}
+              <div className="p-3 space-y-3 max-h-[300px] overflow-y-auto">
+                {activeFilters.map((filter, index) => {
+                  const field = filterFields.find((f) => f.id === filter.field)
+                  return (
+                    <div key={index} className="flex items-center gap-2">
+                      <Select value={filter.field} onValueChange={(v) => updateFilter(index, { field: v })}>
+                        <SelectTrigger className="w-[120px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {filterFields.map((f) => (
+                            <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={filter.operator} onValueChange={(v) => updateFilter(index, { operator: v as ActiveFilter["operator"] })}>
+                        <SelectTrigger className="w-[100px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="contains">contains</SelectItem>
+                          <SelectItem value="equals">equals</SelectItem>
+                          <SelectItem value="startsWith">starts with</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {field?.type === "select" ? (
+                        <Select value={filter.value} onValueChange={(v) => updateFilter(index, { value: v })}>
+                          <SelectTrigger className="flex-1 h-8 text-xs">
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options?.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          value={filter.value}
+                          onChange={(e) => updateFilter(index, { value: e.target.value })}
+                          className="flex-1 h-8 text-xs"
+                          placeholder="Value..."
+                        />
+                      )}
+
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => removeFilter(index)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
+                })}
+
+                {/* Add Filter Button */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add filter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[200px]">
+                    {filterFields.map((field) => (
+                      <DropdownMenuItem key={field.id} onClick={() => addFilter(field.id)}>
+                        {field.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Columns Button */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Columns className="h-4 w-4" />
+                Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[200px]">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {columns.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.visible}
+                  onCheckedChange={() => toggleColumn(column.id)}
+                >
+                  {column.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* View Mode Toggle & Actions */}
+        <div className="flex items-center gap-2">
+          {/* View Mode Buttons */}
+          <div className="flex items-center border border-border rounded-lg p-1 bg-muted/30">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-7 px-2", viewMode === "table" && getAccentBgClass())}
+              onClick={() => setViewMode("table")}
+            >
+              <List className={cn("h-4 w-4", viewMode === "table" && getAccentTextClass())} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-7 px-2", viewMode === "cards" && getAccentBgClass())}
+              onClick={() => setViewMode("cards")}
+            >
+              <LayoutGrid className={cn("h-4 w-4", viewMode === "cards" && getAccentTextClass())} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-7 px-2", viewMode === "kanban" && getAccentBgClass())}
+              onClick={() => setViewMode("kanban")}
+            >
+              <Kanban className={cn("h-4 w-4", viewMode === "kanban" && getAccentTextClass())} />
+            </Button>
+          </div>
+
+          <Button variant="outline" size="icon">
+            <Download className="h-4 w-4" />
+          </Button>
+          <Button size="sm" className={cn("gap-2", getAccentClass())} onClick={onCreateContact}>
+            <Plus className="h-4 w-4" />
+            Create Contact
+          </Button>
+        </div>
+      </div>
+
+      {/* Active Filters Display */}
+      {(activeFilters.length > 0 || typeFilter !== "all") && (
+        <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground">Active filters:</span>
+          {typeFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1 text-xs">
+              Type: {typeFilter}
+              <button onClick={() => setTypeFilter("all")} className="ml-1 hover:text-foreground">
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {activeFilters.map((filter, index) => (
+            <Badge key={index} variant="secondary" className="gap-1 text-xs">
+              {filterFields.find((f) => f.id === filter.field)?.label}: {filter.value}
+              <button onClick={() => removeFilter(index)} className="ml-1 hover:text-foreground">
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+          <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={clearAllFilters}>
+            Clear all
+          </Button>
+        </div>
+      )}
+
+      {/* Type Tabs */}
+      <div className="flex px-4 py-2 gap-1 border-b border-border overflow-x-auto">
+        {typeTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setTypeFilter(tab.id)}
+            className={cn(
+              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+              typeFilter === tab.id
+                ? cn(getAccentBgClass(), getAccentTextClass())
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-auto">
+        {viewMode === "table" && (
+          <TableView
+            contacts={filteredContacts}
+            columns={visibleColumns}
+            selectedContactId={selectedContactId}
+            selectedRows={selectedRows}
+            onRowClick={onRowClick}
+            onEdit={onEdit}
+            toggleRow={toggleRow}
+            toggleAll={toggleAll}
+            colorTheme={colorTheme}
+          />
+        )}
+        {viewMode === "cards" && (
+          <CardsView
+            contacts={filteredContacts}
+            selectedContactId={selectedContactId}
+            onRowClick={onRowClick}
+            onEdit={onEdit}
+            colorTheme={colorTheme}
+          />
+        )}
+        {viewMode === "kanban" && (
+          <KanbanView
+            contacts={filteredContacts}
+            selectedContactId={selectedContactId}
+            onRowClick={onRowClick}
+            onEdit={onEdit}
+            colorTheme={colorTheme}
+          />
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Total: <span className="font-semibold text-foreground">{filteredContacts.length} contacts</span>
+          {selectedRows.size > 0 && (
+            <span className="ml-2">({selectedRows.size} selected)</span>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <span>1-{Math.min(25, filteredContacts.length)} of {filteredContacts.length}</span>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+// Table View Component
+function TableView({
+  contacts,
+  columns,
+  selectedContactId,
+  selectedRows,
+  onRowClick,
+  onEdit,
+  toggleRow,
+  toggleAll,
+  colorTheme,
+}: {
+  contacts: Contact[]
+  columns: ColumnDef[]
+  selectedContactId?: string
+  selectedRows: Set<string>
+  onRowClick: (contact: Contact) => void
+  onEdit: (contact: Contact) => void
+  toggleRow: (id: string, e: React.MouseEvent) => void
+  toggleAll: () => void
+  colorTheme: ColorTheme
+}) {
+  const getAccentBorderClass = () => {
+    switch (colorTheme) {
+      case "orange": return "border-l-orange-500"
+      case "navy": return "border-l-blue-700"
+      default: return "border-l-slate-600"
+    }
+  }
+
+  const getAccentTextClass = () => {
+    switch (colorTheme) {
+      case "orange": return "text-orange-600"
+      case "navy": return "text-blue-700"
+      default: return "text-slate-700"
+    }
+  }
+
+  return (
+    <table className="w-full text-left border-collapse min-w-[900px]">
+      <thead className="sticky top-0 bg-muted/50 z-10">
+        <tr className="text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+          <th className="px-4 py-3 w-10">
+            <Checkbox
+              checked={selectedRows.size === contacts.length && contacts.length > 0}
+              onCheckedChange={toggleAll}
+            />
+          </th>
+          {columns.map((col) => (
+            <th key={col.id} className="px-4 py-3" style={col.width ? { width: col.width } : undefined}>
+              {col.label}
+            </th>
+          ))}
+          <th className="px-4 py-3 w-10"></th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-border text-sm">
+        {contacts.map((contact) => {
+          const isSelected = selectedContactId === contact.id
+          const isChecked = selectedRows.has(contact.id)
+          const typeCfg = contact.type ? contactTypeConfig[contact.type] : null
+          const statusCfg = contact.status ? contactStatusConfig[contact.status] : null
+
+          return (
+            <tr
+              key={contact.id}
+              onClick={() => onRowClick(contact)}
+              className={cn(
+                "cursor-pointer transition-colors",
+                isSelected
+                  ? cn("bg-muted/50", getAccentBorderClass(), "border-l-4")
+                  : "hover:bg-muted/30 border-l-4 border-l-transparent"
+              )}
+            >
+              <td className="px-4 py-3">
+                <Checkbox
+                  checked={isChecked}
+                  onClick={(e) => toggleRow(contact.id, e)}
+                />
+              </td>
+              {columns.map((col) => (
+                <td key={col.id} className="px-4 py-3">
+                  {col.id === "name" && (
+                    <div className="flex items-center gap-2">
+                      <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                        {contact.initials}
+                      </div>
+                      <div>
+                        <span className={cn("font-semibold", isSelected && getAccentTextClass())}>{contact.name}</span>
+                        {(contact.customerRank ?? 0) >= 4 && (
+                          <Star className="inline h-3 w-3 ml-1 text-amber-500 fill-amber-500" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {col.id === "email" && <span className="text-muted-foreground">{contact.email}</span>}
+                  {col.id === "phone" && <span className="text-muted-foreground">{contact.phone}</span>}
+                  {col.id === "location" && (
+                    <span className="text-muted-foreground">
+                      {contact.city && contact.country ? `${contact.city}, ${contact.country}` : contact.country || "-"}
+                    </span>
+                  )}
+                  {col.id === "type" && typeCfg && (
+                    <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold", typeCfg.className)}>
+                      {typeCfg.label.toUpperCase()}
+                    </span>
+                  )}
+                  {col.id === "status" && statusCfg && (
+                    <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold", statusCfg.className)}>
+                      {statusCfg.label.toUpperCase()}
+                    </span>
+                  )}
+                  {col.id === "industry" && <span className="text-muted-foreground">{contact.industry || "-"}</span>}
+                  {col.id === "paymentTerms" && <span className="text-muted-foreground">{contact.paymentTerms || "-"}</span>}
+                  {col.id === "currency" && <span className="text-muted-foreground">{contact.currency || "-"}</span>}
+                  {col.id === "tags" && (
+                    <div className="flex gap-1 flex-wrap">
+                      {contact.tags?.slice(0, 2).map((tag) => (
+                        <span key={tag} className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
+                          {tag}
+                        </span>
+                      ))}
+                      {(contact.tags?.length ?? 0) > 2 && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
+                          +{(contact.tags?.length ?? 0) - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {col.id === "createdAt" && (
+                    <span className="text-muted-foreground">
+                      {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : "-"}
+                    </span>
+                  )}
+                </td>
+              ))}
+              <td className="px-4 py-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(contact); }}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Send Email
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Duplicate
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Archive
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+// Cards View Component
+function CardsView({
+  contacts,
+  selectedContactId,
+  onRowClick,
+  onEdit,
+  colorTheme,
+}: {
+  contacts: Contact[]
+  selectedContactId?: string
+  onRowClick: (contact: Contact) => void
+  onEdit: (contact: Contact) => void
+  colorTheme: ColorTheme
+}) {
+  const getAccentBorderClass = () => {
+    switch (colorTheme) {
+      case "orange": return "border-orange-500"
+      case "navy": return "border-blue-700"
+      default: return "border-slate-600"
+    }
+  }
+
+  return (
+    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {contacts.map((contact) => {
+        const isSelected = selectedContactId === contact.id
+        const typeCfg = contact.type ? contactTypeConfig[contact.type] : null
+        const statusCfg = contact.status ? contactStatusConfig[contact.status] : null
+
+        return (
+          <div
+            key={contact.id}
+            onClick={() => onRowClick(contact)}
+            className={cn(
+              "bg-card border rounded-xl p-4 cursor-pointer transition-all hover:shadow-lg",
+              isSelected ? cn("border-2", getAccentBorderClass(), "shadow-md") : "border-border hover:border-muted-foreground/30"
+            )}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="size-12 rounded-xl bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
+                  {contact.initials}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground flex items-center gap-1">
+                    {contact.name}
+                    {(contact.customerRank ?? 0) >= 4 && (
+                      <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                    )}
+                  </h3>
+                  {typeCfg && (
+                    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold", typeCfg.className)}>
+                      {typeCfg.label}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(contact); }}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Email
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="h-3.5 w-3.5" />
+                <span className="truncate">{contact.email}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Phone className="h-3.5 w-3.5" />
+                <span>{contact.phone}</span>
+              </div>
+              {(contact.city || contact.country) && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span>{contact.city ? `${contact.city}, ` : ""}{contact.country}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+              {statusCfg && (
+                <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold", statusCfg.className)}>
+                  {statusCfg.label}
+                </span>
+              )}
+              <div className="flex gap-1">
+                {contact.tags?.slice(0, 2).map((tag) => (
+                  <span key={tag} className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Kanban View Component
+function KanbanView({
+  contacts,
+  selectedContactId,
+  onRowClick,
+  onEdit,
+  colorTheme,
+}: {
+  contacts: Contact[]
+  selectedContactId?: string
+  onRowClick: (contact: Contact) => void
+  onEdit: (contact: Contact) => void
+  colorTheme: ColorTheme
+}) {
+  const getAccentBorderClass = () => {
+    switch (colorTheme) {
+      case "orange": return "border-orange-500"
+      case "navy": return "border-blue-700"
+      default: return "border-slate-600"
+    }
+  }
+
+  const columns = [
+    { id: "prospect", label: "Prospects", color: "bg-amber-500" },
+    { id: "active", label: "Active", color: "bg-green-500" },
+    { id: "inactive", label: "Inactive", color: "bg-slate-400" },
+  ]
+
+  return (
+    <div className="p-4 flex gap-4 h-full overflow-x-auto">
+      {columns.map((column) => {
+        const columnContacts = contacts.filter((c) => c.status === column.id)
+        
+        return (
+          <div key={column.id} className="flex-shrink-0 w-[320px] flex flex-col">
+            {/* Column Header */}
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <div className={cn("w-3 h-3 rounded-full", column.color)} />
+              <h3 className="font-semibold text-sm">{column.label}</h3>
+              <Badge variant="secondary" className="ml-auto">
+                {columnContacts.length}
+              </Badge>
+            </div>
+
+            {/* Column Content */}
+            <div className="flex-1 bg-muted/30 rounded-xl p-2 space-y-2 overflow-y-auto">
+              {columnContacts.map((contact) => {
+                const isSelected = selectedContactId === contact.id
+                const typeCfg = contact.type ? contactTypeConfig[contact.type] : null
+
+                return (
+                  <div
+                    key={contact.id}
+                    onClick={() => onRowClick(contact)}
+                    className={cn(
+                      "bg-card border rounded-lg p-3 cursor-pointer transition-all hover:shadow-md",
+                      isSelected ? cn("border-2", getAccentBorderClass()) : "border-border"
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
+                        {contact.initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm truncate flex items-center gap-1">
+                          {contact.name}
+                          {(contact.customerRank ?? 0) >= 4 && (
+                            <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                          )}
+                        </h4>
+                        <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+                        {typeCfg && (
+                          <span className={cn("inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold", typeCfg.className)}>
+                            {typeCfg.label}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {contact.tags && contact.tags.length > 0 && (
+                      <div className="mt-2 flex gap-1 flex-wrap">
+                        {contact.tags.slice(0, 2).map((tag) => (
+                          <span key={tag} className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {columnContacts.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No contacts
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}

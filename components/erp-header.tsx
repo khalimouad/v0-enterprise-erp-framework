@@ -35,6 +35,7 @@ import {
   Shield,
   Database,
   Globe,
+  Palette,
   type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -48,7 +49,41 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Badge } from "@/components/ui/badge"
+
+// Color themes
+export type ColorTheme = "orange" | "slate" | "navy"
+
+interface ThemeConfig {
+  label: string
+  primary: string
+  accent: string
+  primaryClass: string
+  accentClass: string
+}
+
+export const themeConfigs: Record<ColorTheme, ThemeConfig> = {
+  orange: {
+    label: "Orange",
+    primary: "bg-orange-600",
+    accent: "bg-orange-500",
+    primaryClass: "theme-orange",
+    accentClass: "text-orange-500",
+  },
+  slate: {
+    label: "Slate",
+    primary: "bg-slate-800",
+    accent: "bg-slate-600",
+    primaryClass: "theme-slate",
+    accentClass: "text-slate-600",
+  },
+  navy: {
+    label: "Navy",
+    primary: "bg-blue-900",
+    accent: "bg-blue-700",
+    primaryClass: "theme-navy",
+    accentClass: "text-blue-700",
+  },
+}
 
 // Sub-item type
 interface SubItem {
@@ -171,9 +206,13 @@ const modules: Module[] = [
   },
 ]
 
-export function ERPHeader() {
+interface ERPHeaderProps {
+  colorTheme?: ColorTheme
+  onThemeChange?: (theme: ColorTheme) => void
+}
+
+export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProps) {
   const pathname = usePathname()
-  const [hoveredModule, setHoveredModule] = React.useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [mobileExpandedModule, setMobileExpandedModule] = React.useState<string | null>(null)
 
@@ -185,131 +224,150 @@ export function ERPHeader() {
 
   const activeModuleData = modules.find((m) => m.id === activeModule)
 
+  // Get theme-specific classes
+  const getThemeClasses = () => {
+    switch (colorTheme) {
+      case "orange":
+        return {
+          primary: "bg-orange-600",
+          primaryHover: "hover:bg-orange-500/20",
+          accent: "bg-orange-500 text-white",
+          accentHover: "hover:bg-orange-500/90",
+          activeModule: "bg-white/15",
+          moduleHover: "hover:bg-white/10",
+        }
+      case "navy":
+        return {
+          primary: "bg-blue-950",
+          primaryHover: "hover:bg-blue-400/20",
+          accent: "bg-blue-600 text-white",
+          accentHover: "hover:bg-blue-600/90",
+          activeModule: "bg-white/15",
+          moduleHover: "hover:bg-white/10",
+        }
+      default: // slate
+        return {
+          primary: "bg-slate-800",
+          primaryHover: "hover:bg-slate-400/20",
+          accent: "bg-slate-600 text-white",
+          accentHover: "hover:bg-slate-600/90",
+          activeModule: "bg-white/15",
+          moduleHover: "hover:bg-white/10",
+        }
+    }
+  }
+
+  const theme = getThemeClasses()
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       {/* Desktop Navigation */}
       <div className="hidden lg:block">
-        {/* Primary Navigation Bar */}
-        <div className="flex h-14 items-center px-4 gap-4 bg-primary text-primary-foreground">
+        {/* Primary Navigation Bar - NO hover dropdown, only click navigates */}
+        <div className={cn("flex h-14 items-center px-4 gap-4 text-white", theme.primary)}>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
-              <Building2 className="h-5 w-5 text-accent-foreground" />
+            <div className={cn("flex h-8 w-8 items-center justify-center rounded-md", theme.accent)}>
+              <Building2 className="h-5 w-5" />
             </div>
             <span className="font-semibold text-lg">Nexus ERP</span>
           </Link>
 
-          {/* Module Navigation - Horizontal */}
+          {/* Module Navigation - Horizontal, NO hover submenu */}
           <nav className="flex items-center gap-1 flex-1 ml-6">
             {modules.map((module) => {
               const isActive = activeModule === module.id
-              const isHovered = hoveredModule === module.id
               const Icon = module.icon
 
               return (
-                <div
+                <Link
                   key={module.id}
-                  className="relative"
-                  onMouseEnter={() => setHoveredModule(module.id)}
-                  onMouseLeave={() => setHoveredModule(null)}
-                >
-                  <Link
-                    href={module.href}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                      isActive
-                        ? "bg-primary-foreground/15 text-primary-foreground"
-                        : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{module.label}</span>
-                    {module.children.length > 0 && (
-                      <ChevronDown
-                        className={cn(
-                          "h-3 w-3 transition-transform",
-                          isHovered && "rotate-180"
-                        )}
-                      />
-                    )}
-                  </Link>
-
-                  {/* Horizontal Children Dropdown - derived from module.children */}
-                  {module.children.length > 0 && isHovered && (
-                    <div className="absolute top-full left-0 mt-1 z-50">
-                      <div className="bg-popover border border-border rounded-lg shadow-lg p-2 min-w-max">
-                        {/* Horizontal submenu - showing children */}
-                        <div className="flex items-center gap-1">
-                          {module.children.map((child) => {
-                            const ChildIcon = child.icon
-                            const isChildActive = pathname === child.href
-                            return (
-                              <Link
-                                key={child.href}
-                                href={child.href}
-                                className={cn(
-                                  "flex items-center gap-1.5 px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap",
-                                  isChildActive
-                                    ? "bg-accent text-accent-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                                )}
-                              >
-                                <ChildIcon className="h-4 w-4" />
-                                <span>{child.label}</span>
-                              </Link>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    </div>
+                  href={module.href}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                    isActive
+                      ? theme.activeModule
+                      : cn("text-white/70", theme.moduleHover, "hover:text-white")
                   )}
-                </div>
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{module.label}</span>
+                </Link>
               )
             })}
           </nav>
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Color Theme Switcher */}
+            {onThemeChange && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10">
+                    <Palette className="h-5 w-5" />
+                    <span className="sr-only">Change theme</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onThemeChange("orange")} className="gap-2">
+                    <div className="h-4 w-4 rounded-full bg-orange-500" />
+                    Orange
+                    {colorTheme === "orange" && <span className="ml-auto text-xs">Active</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onThemeChange("slate")} className="gap-2">
+                    <div className="h-4 w-4 rounded-full bg-slate-600" />
+                    Slate
+                    {colorTheme === "slate" && <span className="ml-auto text-xs">Active</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onThemeChange("navy")} className="gap-2">
+                    <div className="h-4 w-4 rounded-full bg-blue-900" />
+                    Navy
+                    {colorTheme === "navy" && <span className="ml-auto text-xs">Active</span>}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             {/* Global Search */}
-            <Button variant="secondary" size="sm" className="w-[180px] justify-start bg-primary-foreground/10 border-0 text-primary-foreground/70 hover:bg-primary-foreground/15 hover:text-primary-foreground">
+            <Button variant="ghost" size="sm" className="w-[180px] justify-start bg-white/10 border-0 text-white/70 hover:bg-white/15 hover:text-white">
               <Search className="h-4 w-4 mr-2" />
               <span>Search...</span>
-              <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-1.5 font-mono text-[10px] font-medium text-primary-foreground/70">
-                ⌘K
+              <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-white/20 bg-white/10 px-1.5 font-mono text-[10px] font-medium text-white/70">
+                K
               </kbd>
             </Button>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 relative">
+            <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-accent text-[10px] text-accent-foreground font-bold">
+              <span className={cn("absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full text-[10px] font-bold", theme.accent)}>
                 3
               </span>
               <span className="sr-only">Notifications</span>
             </Button>
 
             {/* Quick Create */}
-            <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10">
+            <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10">
               <Plus className="h-5 w-5" />
               <span className="sr-only">Create new</span>
             </Button>
 
             {/* Divider */}
-            <div className="h-6 w-px bg-primary-foreground/20 mx-1" />
+            <div className="h-6 w-px bg-white/20 mx-1" />
 
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 px-2 text-primary-foreground hover:bg-primary-foreground/10">
-                  <Avatar className="h-8 w-8 border border-primary-foreground/20">
+                <Button variant="ghost" className="flex items-center gap-2 px-2 text-white hover:bg-white/10">
+                  <Avatar className="h-8 w-8 border border-white/20">
                     <AvatarImage src="/placeholder-user.jpg" alt="User" />
-                    <AvatarFallback className="bg-accent text-accent-foreground text-xs">JD</AvatarFallback>
+                    <AvatarFallback className={cn("text-xs", theme.accent)}>JD</AvatarFallback>
                   </Avatar>
                   <div className="hidden xl:flex flex-col items-start">
                     <span className="text-sm font-medium">John Doe</span>
-                    <span className="text-[10px] text-primary-foreground/60">Administrator</span>
+                    <span className="text-[10px] text-white/60">Administrator</span>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-primary-foreground/60" />
+                  <ChevronDown className="h-4 w-4 text-white/60" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -335,13 +393,18 @@ export function ERPHeader() {
           </div>
         </div>
 
-        {/* Secondary Navigation - Module Children (Horizontal Tab Bar) */}
+        {/* Secondary Navigation - Module Children (Horizontal Tab Bar) - Always visible */}
         {activeModuleData && activeModuleData.children.length > 0 && (
           <div className="border-b border-border bg-card">
             <div className="flex items-center gap-1 px-4 h-11 overflow-x-auto">
               <div className="flex items-center gap-2 pr-4 mr-4 border-r border-border">
-                {React.createElement(activeModuleData.icon, { className: "h-4 w-4 text-accent" })}
-                <span className="text-sm font-semibold text-foreground whitespace-nowrap">{activeModuleData.label} Module</span>
+                {React.createElement(activeModuleData.icon, { 
+                  className: cn("h-4 w-4", 
+                    colorTheme === "orange" ? "text-orange-500" : 
+                    colorTheme === "navy" ? "text-blue-700" : "text-slate-600"
+                  ) 
+                })}
+                <span className="text-sm font-semibold text-foreground whitespace-nowrap">{activeModuleData.label}</span>
               </div>
               {activeModuleData.children.map((child) => {
                 const ChildIcon = child.icon
@@ -353,7 +416,11 @@ export function ERPHeader() {
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
                       isChildActive
-                        ? "bg-muted text-foreground"
+                        ? colorTheme === "orange" 
+                          ? "bg-orange-500/10 text-orange-600"
+                          : colorTheme === "navy"
+                          ? "bg-blue-700/10 text-blue-700"
+                          : "bg-slate-600/10 text-slate-700"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                   >
@@ -368,11 +435,11 @@ export function ERPHeader() {
       </div>
 
       {/* Mobile/Tablet Navigation */}
-      <div className="lg:hidden flex h-14 items-center px-4 gap-4 bg-primary text-primary-foreground">
+      <div className={cn("lg:hidden flex h-14 items-center px-4 gap-4 text-white", theme.primary)}>
         {/* Mobile Menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open menu</span>
             </Button>
@@ -380,14 +447,14 @@ export function ERPHeader() {
           <SheetContent side="left" className="w-[300px] p-0">
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border bg-primary text-primary-foreground">
+              <div className={cn("flex items-center justify-between p-4 border-b border-border text-white", theme.primary)}>
                 <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
-                    <Building2 className="h-5 w-5 text-accent-foreground" />
+                  <div className={cn("flex h-8 w-8 items-center justify-center rounded-md", theme.accent)}>
+                    <Building2 className="h-5 w-5" />
                   </div>
                   <span className="font-semibold text-lg">Nexus ERP</span>
                 </Link>
-                <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setMobileOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
@@ -409,7 +476,11 @@ export function ERPHeader() {
                           className={cn(
                             "flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
                             isActive
-                              ? "bg-accent/10 text-accent"
+                              ? colorTheme === "orange" 
+                                ? "bg-orange-500/10 text-orange-600"
+                                : colorTheme === "navy"
+                                ? "bg-blue-700/10 text-blue-700"
+                                : "bg-slate-600/10 text-slate-700"
                               : "text-muted-foreground hover:text-foreground hover:bg-muted"
                           )}
                         >
@@ -427,7 +498,7 @@ export function ERPHeader() {
                           )}
                         </button>
 
-                        {/* Mobile Children - Vertical list derived from module.children */}
+                        {/* Mobile Children */}
                         {isExpanded && module.children.length > 0 && (
                           <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l-2 border-border pl-3">
                             {module.children.map((child) => {
@@ -441,7 +512,11 @@ export function ERPHeader() {
                                   className={cn(
                                     "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors",
                                     isChildActive
-                                      ? "bg-accent/10 text-accent"
+                                      ? colorTheme === "orange" 
+                                        ? "bg-orange-500/10 text-orange-600"
+                                        : colorTheme === "navy"
+                                        ? "bg-blue-700/10 text-blue-700"
+                                        : "bg-slate-600/10 text-slate-700"
                                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                                   )}
                                 >
@@ -463,7 +538,7 @@ export function ERPHeader() {
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src="/placeholder-user.jpg" alt="User" />
-                    <AvatarFallback className="bg-accent text-accent-foreground">JD</AvatarFallback>
+                    <AvatarFallback className={cn(theme.accent)}>JD</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">John Doe</p>
@@ -477,27 +552,56 @@ export function ERPHeader() {
 
         {/* Logo - Centered on Mobile */}
         <Link href="/" className="flex items-center gap-2 flex-1 justify-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
-            <Building2 className="h-5 w-5 text-accent-foreground" />
+          <div className={cn("flex h-8 w-8 items-center justify-center rounded-md", theme.accent)}>
+            <Building2 className="h-5 w-5" />
           </div>
-          <span className="font-semibold">Nexus ERP</span>
+          <span className="font-semibold text-lg">Nexus ERP</span>
         </Link>
 
-        {/* Mobile Right Actions */}
+        {/* Right Actions */}
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+          <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10">
             <Search className="h-5 w-5" />
-            <span className="sr-only">Search</span>
           </Button>
-          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 relative">
+          <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 relative">
             <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-accent text-[10px] text-accent-foreground font-bold">
+            <span className={cn("absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full text-[10px] font-bold", theme.accent)}>
               3
             </span>
-            <span className="sr-only">Notifications</span>
           </Button>
         </div>
       </div>
+
+      {/* Mobile Secondary Navigation */}
+      {activeModuleData && activeModuleData.children.length > 0 && (
+        <div className="lg:hidden border-b border-border bg-card">
+          <div className="flex items-center gap-1 px-4 h-10 overflow-x-auto">
+            {activeModuleData.children.map((child) => {
+              const ChildIcon = child.icon
+              const isChildActive = pathname === child.href
+              return (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap",
+                    isChildActive
+                      ? colorTheme === "orange" 
+                        ? "bg-orange-500/10 text-orange-600"
+                        : colorTheme === "navy"
+                        ? "bg-blue-700/10 text-blue-700"
+                        : "bg-slate-600/10 text-slate-700"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <ChildIcon className="h-3.5 w-3.5" />
+                  <span>{child.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </header>
   )
 }

@@ -17,6 +17,24 @@ export interface Contact {
   tags?: string[]
   createdAt?: string
   updatedAt?: string
+  status?: "active" | "inactive" | "prospect"
+  industry?: string
+  website?: string
+}
+
+export const contactStatusConfig = {
+  active: {
+    label: "Active",
+    className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  },
+  inactive: {
+    label: "Inactive",
+    className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+  },
+  prospect: {
+    label: "Prospect",
+    className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  },
 }
 
 export interface OrderLine {

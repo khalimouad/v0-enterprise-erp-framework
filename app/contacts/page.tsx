@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { ERPHeader } from "@/components/erp-header"
-import { ContactsTable } from "@/components/contacts/contacts-table"
+import { ERPHeader, type ColorTheme } from "@/components/erp-header"
+import { ContactsListView } from "@/components/contacts/contacts-list-view"
 import { ContactPanel } from "@/components/contacts/contact-panel"
 import { ContactEditPanel } from "@/components/contacts/contact-edit-panel"
 import type { Contact } from "@/lib/types"
 
-// Sample data
+// Sample data - Extended
 const sampleContacts: Contact[] = [
   {
     id: "c1",
@@ -24,6 +24,9 @@ const sampleContacts: Contact[] = [
     customerRank: 5,
     tags: ["VIP", "Enterprise"],
     createdAt: "2023-01-15",
+    status: "active",
+    industry: "Manufacturing",
+    website: "www.globalind.com",
   },
   {
     id: "c2",
@@ -40,6 +43,9 @@ const sampleContacts: Contact[] = [
     customerRank: 3,
     tags: ["Startup"],
     createdAt: "2023-03-22",
+    status: "active",
+    industry: "Technology",
+    website: "www.apex.com",
   },
   {
     id: "c3",
@@ -56,6 +62,9 @@ const sampleContacts: Contact[] = [
     customerRank: 4,
     tags: ["Tech"],
     createdAt: "2023-05-10",
+    status: "active",
+    industry: "Technology",
+    website: "www.nova.tech",
   },
   {
     id: "c4",
@@ -73,6 +82,9 @@ const sampleContacts: Contact[] = [
     supplierRank: 4,
     tags: ["Manufacturing", "Partner"],
     createdAt: "2022-11-05",
+    status: "active",
+    industry: "Manufacturing",
+    website: "www.zenith.com",
   },
   {
     id: "c5",
@@ -89,6 +101,9 @@ const sampleContacts: Contact[] = [
     customerRank: 4,
     tags: ["Enterprise"],
     createdAt: "2023-02-18",
+    status: "active",
+    industry: "Services",
+    website: "www.metrosys.com",
   },
   {
     id: "c6",
@@ -105,6 +120,9 @@ const sampleContacts: Contact[] = [
     supplierRank: 5,
     tags: ["Import", "Electronics"],
     createdAt: "2022-08-12",
+    status: "active",
+    industry: "Trading",
+    website: "www.pacific.co",
   },
   {
     id: "c7",
@@ -121,6 +139,9 @@ const sampleContacts: Contact[] = [
     supplierRank: 4,
     tags: ["Europe", "Hardware"],
     createdAt: "2023-04-01",
+    status: "active",
+    industry: "Distribution",
+    website: "www.eurotech.eu",
   },
   {
     id: "c8",
@@ -137,6 +158,47 @@ const sampleContacts: Contact[] = [
     customerRank: 2,
     tags: ["Retail", "Design"],
     createdAt: "2023-06-20",
+    status: "inactive",
+    industry: "Retail",
+    website: "www.decoaddict.com",
+  },
+  {
+    id: "c9",
+    name: "Nordic Imports",
+    email: "sales@nordicimports.se",
+    phone: "+46 8 123 4567",
+    initials: "NI",
+    type: "supplier",
+    country: "Sweden",
+    city: "Stockholm",
+    address: "Kungsgatan 44",
+    paymentTerms: "Net 60 Days",
+    currency: "EUR",
+    supplierRank: 3,
+    tags: ["Europe", "Furniture"],
+    createdAt: "2023-07-15",
+    status: "active",
+    industry: "Import/Export",
+    website: "www.nordicimports.se",
+  },
+  {
+    id: "c10",
+    name: "TechStart Inc.",
+    email: "info@techstart.io",
+    phone: "+1 (555) 890-1234",
+    initials: "TS",
+    type: "customer",
+    country: "United States",
+    city: "Austin",
+    address: "500 Congress Avenue",
+    paymentTerms: "Net 15 Days",
+    currency: "USD",
+    customerRank: 1,
+    tags: ["Startup", "Tech"],
+    createdAt: "2024-01-10",
+    status: "prospect",
+    industry: "Technology",
+    website: "www.techstart.io",
   },
 ]
 
@@ -144,12 +206,7 @@ export default function ContactsPage() {
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null)
   const [editingContact, setEditingContact] = React.useState<Contact | null>(null)
   const [contacts, setContacts] = React.useState(sampleContacts)
-  const [typeFilter, setTypeFilter] = React.useState<string>("all")
-
-  const filteredContacts = React.useMemo(() => {
-    if (typeFilter === "all") return contacts
-    return contacts.filter((c) => c.type === typeFilter || (typeFilter === "both" && c.type === "both"))
-  }, [contacts, typeFilter])
+  const [colorTheme, setColorTheme] = React.useState<ColorTheme>("slate")
 
   const handleRowClick = (contact: Contact) => {
     setSelectedContact(contact)
@@ -175,20 +232,33 @@ export default function ContactsPage() {
     setSelectedContact(updatedContact)
   }
 
+  const handleCreateContact = () => {
+    const newContact: Contact = {
+      id: `c${Date.now()}`,
+      name: "",
+      email: "",
+      phone: "",
+      initials: "NC",
+      type: "customer",
+      createdAt: new Date().toISOString().split("T")[0],
+      status: "prospect",
+    }
+    setEditingContact(newContact)
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <ERPHeader />
+      <ERPHeader colorTheme={colorTheme} onThemeChange={setColorTheme} />
       <main className="flex h-[calc(100vh-7rem)]">
-        {/* Main Table Area */}
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <ContactsTable
-            contacts={filteredContacts}
+          <ContactsListView
+            contacts={contacts}
             selectedContactId={selectedContact?.id || editingContact?.id}
             onRowClick={handleRowClick}
             onEdit={handleEdit}
-            typeFilter={typeFilter}
-            onTypeFilterChange={setTypeFilter}
-            totalContacts={contacts.length}
+            onCreateContact={handleCreateContact}
+            colorTheme={colorTheme}
           />
         </div>
 
@@ -198,6 +268,7 @@ export default function ContactsPage() {
             contact={selectedContact}
             onClose={handleClosePanel}
             onEdit={() => handleEdit(selectedContact)}
+            colorTheme={colorTheme}
           />
         )}
 
@@ -207,6 +278,7 @@ export default function ContactsPage() {
             contact={editingContact}
             onClose={handleCloseEditPanel}
             onSave={handleSaveContact}
+            colorTheme={colorTheme}
           />
         )}
       </main>

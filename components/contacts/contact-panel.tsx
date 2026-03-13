@@ -1,16 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { X, Mail, Phone, MapPin, CreditCard, Calendar, Tag, Edit, ShoppingCart, FileText, Star } from "lucide-react"
+import { X, Mail, Phone, MapPin, CreditCard, Calendar, Tag, Edit, ShoppingCart, FileText, Star, Globe, Building2, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import type { Contact } from "@/lib/types"
-import { contactTypeConfig } from "@/lib/types"
+import { contactTypeConfig, contactStatusConfig } from "@/lib/types"
+import type { ColorTheme } from "@/components/erp-header"
 
 interface ContactPanelProps {
   contact: Contact
   onClose: () => void
   onEdit: () => void
+  colorTheme?: ColorTheme
 }
 
 // Simulated related records
@@ -25,8 +27,9 @@ const getRelatedInvoices = (contactId: string) => [
   { id: "INV-2023-045", date: "Oct 12, 2023", total: "$1,240.00", status: "Pending" },
 ]
 
-export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
+export function ContactPanel({ contact, onClose, onEdit, colorTheme = "slate" }: ContactPanelProps) {
   const typeCfg = contact.type ? contactTypeConfig[contact.type] : null
+  const statusCfg = contact.status ? contactStatusConfig[contact.status] : null
   const relatedOrders = getRelatedOrders(contact.id)
   const relatedInvoices = getRelatedInvoices(contact.id)
 
@@ -38,6 +41,38 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
       day: "numeric",
       year: "numeric",
     })
+  }
+
+  const getAccentClass = () => {
+    switch (colorTheme) {
+      case "orange": return "bg-orange-500 text-white hover:bg-orange-600"
+      case "navy": return "bg-blue-700 text-white hover:bg-blue-800"
+      default: return "bg-slate-700 text-white hover:bg-slate-800"
+    }
+  }
+
+  const getAccentTextClass = () => {
+    switch (colorTheme) {
+      case "orange": return "text-orange-600"
+      case "navy": return "text-blue-700"
+      default: return "text-slate-700"
+    }
+  }
+
+  const getAccentBgClass = () => {
+    switch (colorTheme) {
+      case "orange": return "bg-orange-500/10"
+      case "navy": return "bg-blue-700/10"
+      default: return "bg-slate-600/10"
+    }
+  }
+
+  const getAccentBorderClass = () => {
+    switch (colorTheme) {
+      case "orange": return "border-orange-500"
+      case "navy": return "border-blue-700"
+      default: return "border-slate-600"
+    }
   }
 
   return (
@@ -53,7 +88,7 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
       <div className="p-6 space-y-6">
         {/* Header Info */}
         <div className="flex items-start gap-4">
-          <div className="size-14 rounded-xl bg-accent/10 flex items-center justify-center text-accent text-xl font-bold">
+          <div className={cn("size-14 rounded-xl flex items-center justify-center text-xl font-bold", getAccentBgClass(), getAccentTextClass())}>
             {contact.initials}
           </div>
           <div className="flex-1 min-w-0">
@@ -63,11 +98,18 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
                 <Star className="h-4 w-4 text-amber-500 fill-amber-500 shrink-0" />
               )}
             </div>
-            {typeCfg && (
-              <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1", typeCfg.className)}>
-                {typeCfg.label}
-              </span>
-            )}
+            <div className="flex items-center gap-2 mt-1">
+              {typeCfg && (
+                <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold", typeCfg.className)}>
+                  {typeCfg.label}
+                </span>
+              )}
+              {statusCfg && (
+                <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold", statusCfg.className)}>
+                  {statusCfg.label}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -75,7 +117,7 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
         <div className="space-y-3">
           <div className="flex items-center gap-3 text-sm">
             <Mail className="h-4 w-4 text-muted-foreground" />
-            <a href={`mailto:${contact.email}`} className="text-accent hover:underline">{contact.email}</a>
+            <a href={`mailto:${contact.email}`} className={cn("hover:underline", getAccentTextClass())}>{contact.email}</a>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <Phone className="h-4 w-4 text-muted-foreground" />
@@ -89,6 +131,21 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
                 {contact.city && `${contact.city}, `}
                 {contact.country}
               </span>
+            </div>
+          )}
+          {contact.website && (
+            <div className="flex items-center gap-3 text-sm">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <a href={`https://${contact.website}`} target="_blank" rel="noopener noreferrer" className={cn("hover:underline flex items-center gap-1", getAccentTextClass())}>
+                {contact.website}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+          {contact.industry && (
+            <div className="flex items-center gap-3 text-sm">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">{contact.industry}</span>
             </div>
           )}
         </div>
@@ -141,7 +198,7 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
               className={cn(
                 "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
                 activeTab === "orders"
-                  ? "border-accent text-accent"
+                  ? cn(getAccentBorderClass(), getAccentTextClass())
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
             >
@@ -153,7 +210,7 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
               className={cn(
                 "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
                 activeTab === "invoices"
-                  ? "border-accent text-accent"
+                  ? cn(getAccentBorderClass(), getAccentTextClass())
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
             >
@@ -165,9 +222,9 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
           {/* Related Records List */}
           <div className="space-y-2">
             {activeTab === "orders" && relatedOrders.map((order) => (
-              <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border hover:border-accent/30 cursor-pointer transition-colors">
+              <div key={order.id} className={cn("flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border cursor-pointer transition-colors", `hover:${getAccentBorderClass()}/30`)}>
                 <div>
-                  <p className="text-sm font-medium text-accent">{order.id}</p>
+                  <p className={cn("text-sm font-medium", getAccentTextClass())}>{order.id}</p>
                   <p className="text-[10px] text-muted-foreground">{order.date}</p>
                 </div>
                 <div className="text-right">
@@ -177,9 +234,9 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
               </div>
             ))}
             {activeTab === "invoices" && relatedInvoices.map((invoice) => (
-              <div key={invoice.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border hover:border-accent/30 cursor-pointer transition-colors">
+              <div key={invoice.id} className={cn("flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border cursor-pointer transition-colors", `hover:${getAccentBorderClass()}/30`)}>
                 <div>
-                  <p className="text-sm font-medium text-accent">{invoice.id}</p>
+                  <p className={cn("text-sm font-medium", getAccentTextClass())}>{invoice.id}</p>
                   <p className="text-[10px] text-muted-foreground">{invoice.date}</p>
                 </div>
                 <div className="text-right">
@@ -193,7 +250,7 @@ export function ContactPanel({ contact, onClose, onEdit }: ContactPanelProps) {
 
         {/* Actions */}
         <div className="pt-4 space-y-2">
-          <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" onClick={onEdit}>
+          <Button className={cn("w-full gap-2", getAccentClass())} onClick={onEdit}>
             <Edit className="h-4 w-4" />
             Edit Contact
           </Button>

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { X, Save, Plus, User, Building, CreditCard, Globe } from "lucide-react"
+import { X, Save, Plus, User, Building, CreditCard, Globe, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,17 +14,25 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { Contact } from "@/lib/types"
+import type { ColorTheme } from "@/components/erp-header"
 
 interface ContactEditPanelProps {
   contact: Contact
   onClose: () => void
   onSave: (contact: Contact) => void
+  colorTheme?: ColorTheme
 }
 
 const typeOptions = [
   { value: "customer", label: "Customer" },
   { value: "supplier", label: "Supplier" },
   { value: "both", label: "Customer & Supplier" },
+]
+
+const statusOptions = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+  { value: "prospect", label: "Prospect" },
 ]
 
 const paymentTermsOptions = [
@@ -52,11 +60,26 @@ const countryOptions = [
   { value: "China", label: "China" },
   { value: "Japan", label: "Japan" },
   { value: "Australia", label: "Australia" },
+  { value: "Sweden", label: "Sweden" },
 ]
 
-export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelProps) {
+const industryOptions = [
+  { value: "Technology", label: "Technology" },
+  { value: "Manufacturing", label: "Manufacturing" },
+  { value: "Retail", label: "Retail" },
+  { value: "Services", label: "Services" },
+  { value: "Trading", label: "Trading" },
+  { value: "Distribution", label: "Distribution" },
+  { value: "Import/Export", label: "Import/Export" },
+  { value: "Healthcare", label: "Healthcare" },
+  { value: "Finance", label: "Finance" },
+]
+
+export function ContactEditPanel({ contact, onClose, onSave, colorTheme = "slate" }: ContactEditPanelProps) {
   const [formData, setFormData] = React.useState<Contact>(contact)
   const [newTag, setNewTag] = React.useState("")
+
+  const isNewContact = !contact.name
 
   const updateField = <K extends keyof Contact>(field: K, value: Contact[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -86,7 +109,7 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
       .map((word) => word[0])
       .join("")
       .toUpperCase()
-      .slice(0, 2)
+      .slice(0, 2) || "NC"
 
     onSave({
       ...formData,
@@ -94,19 +117,45 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
     })
   }
 
+  const getAccentClass = () => {
+    switch (colorTheme) {
+      case "orange": return "bg-orange-500 text-white hover:bg-orange-600"
+      case "navy": return "bg-blue-700 text-white hover:bg-blue-800"
+      default: return "bg-slate-700 text-white hover:bg-slate-800"
+    }
+  }
+
+  const getAccentTextClass = () => {
+    switch (colorTheme) {
+      case "orange": return "text-orange-600"
+      case "navy": return "text-blue-700"
+      default: return "text-slate-700"
+    }
+  }
+
+  const getAccentBgClass = () => {
+    switch (colorTheme) {
+      case "orange": return "bg-orange-500/5 border-orange-500/10"
+      case "navy": return "bg-blue-700/5 border-blue-700/10"
+      default: return "bg-slate-600/5 border-slate-600/10"
+    }
+  }
+
   return (
     <aside className="w-[520px] border-l border-border bg-card overflow-y-auto shadow-2xl animate-in slide-in-from-right duration-300">
       {/* Panel Header */}
       <div className="sticky top-0 bg-card p-4 border-b border-border flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
-          <h3 className="font-bold text-foreground">Edit Contact</h3>
-          <span className="text-sm text-accent font-semibold">{contact.name}</span>
+          <h3 className="font-bold text-foreground">{isNewContact ? "New Contact" : "Edit Contact"}</h3>
+          {!isNewContact && (
+            <span className={cn("text-sm font-semibold", getAccentTextClass())}>{contact.name}</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>
             Cancel
           </Button>
-          <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2" onClick={handleSave}>
+          <Button size="sm" className={cn("gap-2", getAccentClass())} onClick={handleSave}>
             <Save className="h-4 w-4" />
             Save
           </Button>
@@ -116,8 +165,8 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
       <div className="p-6 space-y-6">
         {/* General Information Section */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-border">
-            <User className="h-4 w-4 text-accent" />
+          <div className={cn("flex items-center gap-2 pb-2 border-b border-border")}>
+            <User className={cn("h-4 w-4", getAccentTextClass())} />
             <h4 className="text-sm font-bold text-foreground uppercase tracking-wide">General Information</h4>
           </div>
 
@@ -152,20 +201,63 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase">Contact Type</Label>
-              <Select value={formData.type} onValueChange={(v) => updateField("type", v as Contact["type"])}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {typeOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground uppercase">Contact Type</Label>
+                <Select value={formData.type} onValueChange={(v) => updateField("type", v as Contact["type"])}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {typeOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground uppercase">Status</Label>
+                <Select value={formData.status} onValueChange={(v) => updateField("status", v as Contact["status"])}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground uppercase">Industry</Label>
+                <Select value={formData.industry || ""} onValueChange={(v) => updateField("industry", v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industryOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground uppercase">Website</Label>
+                <Input
+                  value={formData.website || ""}
+                  onChange={(e) => updateField("website", e.target.value)}
+                  placeholder="www.example.com"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -173,7 +265,7 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
         {/* Address Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-border">
-            <Globe className="h-4 w-4 text-accent" />
+            <Globe className={cn("h-4 w-4", getAccentTextClass())} />
             <h4 className="text-sm font-bold text-foreground uppercase tracking-wide">Address</h4>
           </div>
 
@@ -218,7 +310,7 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
         {/* Accounting Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-border">
-            <CreditCard className="h-4 w-4 text-accent" />
+            <CreditCard className={cn("h-4 w-4", getAccentTextClass())} />
             <h4 className="text-sm font-bold text-foreground uppercase tracking-wide">Accounting</h4>
           </div>
 
@@ -255,9 +347,9 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
             </div>
           </div>
 
-          <div className="p-4 bg-accent/5 rounded-lg border border-accent/10">
+          <div className={cn("p-4 rounded-lg border", getAccentBgClass())}>
             <div className="flex items-start gap-3">
-              <CreditCard className="h-4 w-4 text-accent mt-0.5" />
+              <CreditCard className={cn("h-4 w-4 mt-0.5", getAccentTextClass())} />
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Tax settings are automatically derived based on the selected country and currency.
               </p>
@@ -268,7 +360,7 @@ export function ContactEditPanel({ contact, onClose, onSave }: ContactEditPanelP
         {/* Tags Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-border">
-            <Building className="h-4 w-4 text-accent" />
+            <Tag className={cn("h-4 w-4", getAccentTextClass())} />
             <h4 className="text-sm font-bold text-foreground uppercase tracking-wide">Tags</h4>
           </div>
 
