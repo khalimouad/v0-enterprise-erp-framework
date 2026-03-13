@@ -52,10 +52,11 @@ const sampleContacts: Contact[] = [
 export default function ContactEditPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const router = useRouter()
-  const contact = sampleContacts.find((c) => c.id === params.id)
+  const { id } = React.use(params)
+  const contact = sampleContacts.find((c) => c.id === id)
 
   if (!contact) {
     return (
