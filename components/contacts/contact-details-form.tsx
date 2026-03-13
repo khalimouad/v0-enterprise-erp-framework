@@ -30,6 +30,19 @@ export function ContactDetailsForm({
   onCancel,
 }: ContactDetailsFormProps) {
   const [tagInput, setTagInput] = React.useState("")
+  const [editingRowIndex, setEditingRowIndex] = React.useState<number | null>(null)
+  const [editValues, setEditValues] = React.useState({
+    name: "",
+    function: "",
+    email: "",
+    phone: "",
+  })
+  const [newContact, setNewContact] = React.useState({
+    name: "",
+    function: "",
+    email: "",
+    phone: "",
+  })
   
   const handleChange = (field: keyof Contact, value: any) => {
     onChange({ ...contact, [field]: value })
@@ -655,7 +668,15 @@ export function ContactDetailsForm({
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => {
-                                  console.log("[v0] Save contact", editValues)
+                                  const updatedContacts = [...(contact.contacts || [])]
+                                  updatedContacts[index] = {
+                                    ...updatedContacts[index],
+                                    name: editValues.name,
+                                    function: editValues.function,
+                                    email: editValues.email,
+                                    phone: editValues.phone,
+                                  }
+                                  handleChange("contacts", updatedContacts)
                                   setEditingRowIndex(null)
                                 }}
                                 className="h-8 w-8 p-0"
@@ -699,7 +720,11 @@ export function ContactDetailsForm({
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => console.log("[v0] Delete contact", index)}
+                                onClick={() => {
+                                  const updatedContacts = [...(contact.contacts || [])]
+                                  updatedContacts.splice(index, 1)
+                                  handleChange("contacts", updatedContacts)
+                                }}
                                 className="h-8 w-8 p-0"
                               >
                                 <Trash2 className="h-4 w-4 text-red-500" />
@@ -730,6 +755,8 @@ export function ContactDetailsForm({
                   </Label>
                   <Input
                     id="newContactName"
+                    value={newContact.name}
+                    onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
                     placeholder="Nom et Prénom"
                     className="mt-1 bg-white dark:bg-slate-800"
                   />
@@ -740,6 +767,8 @@ export function ContactDetailsForm({
                   </Label>
                   <Input
                     id="newContactFunction"
+                    value={newContact.function}
+                    onChange={(e) => setNewContact({ ...newContact, function: e.target.value })}
                     placeholder="Directeur, Responsable, etc."
                     className="mt-1 bg-white dark:bg-slate-800"
                   />
@@ -751,6 +780,8 @@ export function ContactDetailsForm({
                   <Input
                     id="newContactEmail"
                     type="email"
+                    value={newContact.email}
+                    onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
                     placeholder="email@example.com"
                     className="mt-1 bg-white dark:bg-slate-800"
                   />
@@ -761,6 +792,8 @@ export function ContactDetailsForm({
                   </Label>
                   <Input
                     id="newContactPhone"
+                    value={newContact.phone}
+                    onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
                     placeholder="+212 XXX XX XX XX"
                     className="mt-1 bg-white dark:bg-slate-800"
                   />
@@ -768,7 +801,13 @@ export function ContactDetailsForm({
               </div>
               <Button
                 className="mt-4 gap-2 bg-blue-600 hover:bg-blue-700"
-                onClick={() => console.log("[v0] Add new contact")}
+                onClick={() => {
+                  if (newContact.name.trim()) {
+                    const updatedContacts = [...(contact.contacts || []), { ...newContact }]
+                    handleChange("contacts", updatedContacts)
+                    setNewContact({ name: "", function: "", email: "", phone: "" })
+                  }
+                }}
               >
                 <Plus className="h-4 w-4" />
                 Ajouter
