@@ -24,25 +24,63 @@ interface ContactsFiltersProps {
   onClose: () => void
 }
 
-type FilterType = "creationDate" | "modificationDate" | "createdBy" | "contacts"
+type FilterType = 
+  | "name" 
+  | "email" 
+  | "phone" 
+  | "type" 
+  | "status" 
+  | "country" 
+  | "city" 
+  | "industry" 
+  | "paymentTerms" 
+  | "currency" 
+  | "creationDate" 
+  | "modificationDate" 
+  | "createdBy" 
+  | "contacts"
 
 export function ContactsFilters({ isOpen, onClose }: ContactsFiltersProps) {
   const [aiFilter, setAiFilter] = React.useState("")
   const [activeFilters, setActiveFilters] = React.useState<FilterType[]>([])
   
-  // Individual filter states
+  // Quick filter fields
+  const [name, setName] = React.useState("")
+  const [email, setEmail] = React.useState("")
+  const [phone, setPhone] = React.useState("")
+  const [type, setType] = React.useState("")
+  const [status, setStatus] = React.useState("")
+  const [country, setCountry] = React.useState("")
+  const [city, setCity] = React.useState("")
+  const [industry, setIndustry] = React.useState("")
+  const [paymentTerms, setPaymentTerms] = React.useState("")
+  const [currency, setCurrency] = React.useState("")
+  
+  // Date range filters
   const [creationDateFrom, setCreationDateFrom] = React.useState("")
   const [creationDateTo, setCreationDateTo] = React.useState("")
   const [modificationDateFrom, setModificationDateFrom] = React.useState("")
   const [modificationDateTo, setModificationDateTo] = React.useState("")
+  
+  // Special filters
   const [createdBy, setCreatedBy] = React.useState("")
   const [hasContacts, setHasContacts] = React.useState("")
 
-  const availableFilters = [
-    { id: "creationDate" as FilterType, label: "Date de Création" },
-    { id: "modificationDate" as FilterType, label: "Date de Modification" },
-    { id: "createdBy" as FilterType, label: "Créé par" },
-    { id: "contacts" as FilterType, label: "Personnes de Contact" },
+  const availableFilters: Array<{ id: FilterType; label: string }> = [
+    { id: "name", label: "Nom" },
+    { id: "email", label: "Email" },
+    { id: "phone", label: "Téléphone" },
+    { id: "type", label: "Type" },
+    { id: "status", label: "Statut" },
+    { id: "country", label: "Pays" },
+    { id: "city", label: "Ville" },
+    { id: "industry", label: "Secteur" },
+    { id: "paymentTerms", label: "Conditions de Paiement" },
+    { id: "currency", label: "Devise" },
+    { id: "creationDate", label: "Date de Création" },
+    { id: "modificationDate", label: "Date de Modification" },
+    { id: "createdBy", label: "Créé par" },
+    { id: "contacts", label: "Personnes de Contact" },
   ]
 
   const addFilter = (filterId: FilterType) => {
@@ -57,6 +95,257 @@ export function ContactsFilters({ isOpen, onClose }: ContactsFiltersProps) {
 
   const renderFilter = (filterId: FilterType) => {
     switch (filterId) {
+      case "name":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Nom</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              placeholder="Chercher par nom..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "email":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Email</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              type="email"
+              placeholder="Chercher par email..."
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "phone":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Téléphone</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              placeholder="Chercher par téléphone..."
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "type":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Type</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="customer">Client</SelectItem>
+                <SelectItem value="supplier">Fournisseur</SelectItem>
+                <SelectItem value="both">Client & Fournisseur</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )
+
+      case "status":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Statut</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Actif</SelectItem>
+                <SelectItem value="inactive">Inactif</SelectItem>
+                <SelectItem value="prospect">Prospect</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )
+
+      case "country":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Pays</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              placeholder="Chercher par pays..."
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "city":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Ville</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              placeholder="Chercher par ville..."
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "industry":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Secteur</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              placeholder="Chercher par secteur..."
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "paymentTerms":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Conditions de Paiement</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Select value={paymentTerms} onValueChange={setPaymentTerms}>
+              <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="immediate">Immédiat</SelectItem>
+                <SelectItem value="net15">Net 15 Jours</SelectItem>
+                <SelectItem value="net30">Net 30 Jours</SelectItem>
+                <SelectItem value="net45">Net 45 Jours</SelectItem>
+                <SelectItem value="net60">Net 60 Jours</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )
+
+      case "currency":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Devise</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="usd">USD</SelectItem>
+                <SelectItem value="eur">EUR</SelectItem>
+                <SelectItem value="gbp">GBP</SelectItem>
+                <SelectItem value="cad">CAD</SelectItem>
+                <SelectItem value="cny">CNY</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )
+
       case "creationDate":
         return (
           <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
@@ -273,6 +562,16 @@ export function ContactsFilters({ isOpen, onClose }: ContactsFiltersProps) {
               variant="outline"
               className="flex-1 border-2"
               onClick={() => {
+                setName("")
+                setEmail("")
+                setPhone("")
+                setType("")
+                setStatus("")
+                setCountry("")
+                setCity("")
+                setIndustry("")
+                setPaymentTerms("")
+                setCurrency("")
                 setCreationDateFrom("")
                 setCreationDateTo("")
                 setModificationDateFrom("")

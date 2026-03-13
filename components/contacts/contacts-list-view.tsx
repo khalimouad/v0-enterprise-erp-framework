@@ -461,17 +461,17 @@ export function ContactsListView({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Advanced Filters Button */}
+          {/* Filters Button */}
           {onOpenFilters && (
             <Button
               variant="outline"
               size="sm"
               className="gap-2"
               onClick={onOpenFilters}
-              title="Open advanced filters"
+              title="Open filters"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Advanced
+              Filtres
             </Button>
           )}
         </div>
