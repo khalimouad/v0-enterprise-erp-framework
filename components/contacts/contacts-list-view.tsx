@@ -164,6 +164,7 @@ export function ContactsListView({
   const [activeFilters, setActiveFilters] = React.useState<ActiveFilter[]>([])
   const [filterPanelOpen, setFilterPanelOpen] = React.useState(false)
   const [typeFilter, setTypeFilter] = React.useState<string>("all")
+  const [pageSize, setPageSize] = React.useState(25)
 
   // Apply filters
   const filteredContacts = React.useMemo(() => {
