@@ -59,7 +59,6 @@ import {
 import type { Contact } from "@/lib/types"
 import { contactTypeConfig, contactStatusConfig } from "@/lib/types"
 import type { ColorTheme } from "@/components/erp-header"
-import { AISearchInput } from "./ai-search-input"
 
 type ViewMode = "table" | "cards" | "kanban"
 
@@ -325,33 +324,8 @@ export function ContactsListView({
 
   return (
     <div className="flex flex-col h-full bg-card">
-      {/* Toolbar - Responsive */}
-      <div className="p-3 md:p-4 border-b border-border flex flex-col gap-3 md:gap-4">
-        {/* First row: AI Search and Quick Filters */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
-          {/* AI-Powered Search */}
-          <div className="w-full md:flex-1">
-            <AISearchInput
-              onSearch={(query) => setSearchQuery(query)}
-              placeholder="Search with AI..."
-            />
-          </div>
-
-          {/* Filters Button - Opens Sidebar */}
-          {onOpenFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 w-full md:w-auto"
-              onClick={onOpenFilters}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">Filtres</span>
-            </Button>
-          )}
-        </div>
-
-        {/* Second row: Additional controls (Columns, Type filter, etc) */}
+      {/* Toolbar - All controls on one line */}
+      <div className="p-3 md:p-4 border-b border-border">
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {/* Columns Button */}
           <DropdownMenu>
@@ -375,10 +349,7 @@ export function ContactsListView({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
 
-        {/* View Mode Toggle & Actions */}
-        <div className="flex items-center gap-2">
           {/* View Mode Buttons */}
           <div className="flex items-center border border-border rounded-lg p-1 bg-muted/30">
             <Button
@@ -407,13 +378,42 @@ export function ContactsListView({
             </Button>
           </div>
 
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="h-8 w-8">
             <Download className="h-4 w-4" />
           </Button>
+
           <Button size="sm" className={cn("gap-2", getAccentClass())} onClick={onCreateContact}>
             <Plus className="h-4 w-4" />
             Create Contact
           </Button>
+
+          {/* Spacer to push search and filters to the right */}
+          <div className="flex-1" />
+
+          {/* Normal Search Input */}
+          <div className="relative w-48 md:w-64">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+
+          {/* Filters Button - Opens Sidebar */}
+          {onOpenFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={onOpenFilters}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Filtres</span>
+            </Button>
+          )}
         </div>
       </div>
 
