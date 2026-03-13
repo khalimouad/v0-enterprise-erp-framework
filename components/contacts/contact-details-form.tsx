@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Trash2, Save, Plus } from "lucide-react"
+import { Trash2, Save, Plus, Edit2, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -611,19 +611,102 @@ export function ContactDetailsForm({
                   {contact.contacts && contact.contacts.length > 0 ? (
                     contact.contacts.map((cont: any, index: number) => (
                       <tr key={index} className="border-b border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
-                        <td className="px-4 py-3 text-sm">{cont.name || "-"}</td>
-                        <td className="px-4 py-3 text-sm">{cont.function || "-"}</td>
-                        <td className="px-4 py-3 text-sm">{cont.email || "-"}</td>
-                        <td className="px-4 py-3 text-sm">{cont.phone || "-"}</td>
-                        <td className="px-4 py-3 text-center">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => console.log("[v0] Delete contact", index)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </td>
+                        {editingRowIndex === index ? (
+                          <>
+                            <td className="px-4 py-3">
+                              <Input
+                                value={editValues.name}
+                                onChange={(e) =>
+                                  setEditValues({ ...editValues, name: e.target.value })
+                                }
+                                className="h-8"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <Input
+                                value={editValues.function}
+                                onChange={(e) =>
+                                  setEditValues({ ...editValues, function: e.target.value })
+                                }
+                                className="h-8"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <Input
+                                value={editValues.email}
+                                type="email"
+                                onChange={(e) =>
+                                  setEditValues({ ...editValues, email: e.target.value })
+                                }
+                                className="h-8"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <Input
+                                value={editValues.phone}
+                                onChange={(e) =>
+                                  setEditValues({ ...editValues, phone: e.target.value })
+                                }
+                                className="h-8"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-center flex items-center justify-center gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  console.log("[v0] Save contact", editValues)
+                                  setEditingRowIndex(null)
+                                }}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Check className="h-4 w-4 text-green-500" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setEditingRowIndex(null)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <X className="h-4 w-4 text-slate-400" />
+                              </Button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-4 py-3 text-sm">{cont.name || "-"}</td>
+                            <td className="px-4 py-3 text-sm">{cont.function || "-"}</td>
+                            <td className="px-4 py-3 text-sm">{cont.email || "-"}</td>
+                            <td className="px-4 py-3 text-sm">{cont.phone || "-"}</td>
+                            <td className="px-4 py-3 text-center flex items-center justify-center gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditingRowIndex(index)
+                                  setEditValues({
+                                    name: cont.name || "",
+                                    function: cont.function || "",
+                                    email: cont.email || "",
+                                    phone: cont.phone || "",
+                                  })
+                                }}
+                                className="h-8 w-8 p-0"
+                                title="Edit row"
+                              >
+                                <Edit2 className="h-4 w-4 text-blue-500" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => console.log("[v0] Delete contact", index)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </td>
+                          </>
+                        )}
                       </tr>
                     ))
                   ) : (

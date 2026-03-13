@@ -59,6 +59,7 @@ import {
 import type { Contact } from "@/lib/types"
 import { contactTypeConfig, contactStatusConfig } from "@/lib/types"
 import type { ColorTheme } from "@/components/erp-header"
+import { AISearchInput } from "./ai-search-input"
 
 type ViewMode = "table" | "cards" | "kanban"
 
@@ -324,18 +325,15 @@ export function ContactsListView({
 
   return (
     <div className="flex flex-col h-full bg-card">
-      {/* Toolbar */}
-      <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 min-w-[300px]">
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search contacts..."
-              className="pl-10 bg-muted/50 border-0"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+      {/* Toolbar - Responsive */}
+      <div className="p-3 md:p-4 border-b border-border flex flex-col gap-3 md:gap-4">
+        {/* First row: AI Search and Quick Filters */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+          {/* AI-Powered Search */}
+          <div className="w-full md:flex-1">
+            <AISearchInput
+              onSearch={(query) => setSearchQuery(query)}
+              placeholder="Search with AI..."
             />
           </div>
 
@@ -344,18 +342,21 @@ export function ContactsListView({
             <Button
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-2 w-full md:w-auto"
               onClick={onOpenFilters}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Filtres
+              <span className="hidden sm:inline">Filtres</span>
             </Button>
           )}
+        </div>
 
+        {/* Second row: Additional controls (Columns, Type filter, etc) */}
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {/* Columns Button */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2 text-xs md:text-sm">
                 <Columns className="h-4 w-4" />
                 Columns
               </Button>
