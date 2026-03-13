@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Download, Share2, Settings, MoreVertical } from "lucide-react"
+import { ArrowLeft, Download, Share2, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ERPHeader, type ColorTheme } from "@/components/erp-header"
 import { ContactEditFullPage } from "@/components/contacts/contact-edit-full-page"
 import type { Contact } from "@/lib/types"
 
@@ -63,6 +64,7 @@ export default function ContactEditPage({
   const router = useRouter()
   const { id } = React.use(params)
   const contact = sampleContacts.find((c) => c.id === id)
+  const [colorTheme, setColorTheme] = React.useState<ColorTheme>("slate")
 
   if (!contact) {
     return (
@@ -82,7 +84,10 @@ export default function ContactEditPage({
 
   return (
     <div className="flex h-screen flex-col bg-slate-50 dark:bg-slate-950">
-      {/* Header with Navigation and Menu */}
+      {/* Top Module Navigation Menu */}
+      <ERPHeader colorTheme={colorTheme} onThemeChange={setColorTheme} />
+
+      {/* Page Header with Back Button and Menu */}
       <div className="border-b-2 border-slate-300 bg-gradient-to-r from-white to-slate-50 px-6 py-4 dark:border-slate-700 dark:from-slate-900 dark:to-slate-800">
         <div className="flex items-center justify-between gap-4">
           {/* Left: Back Button & Title */}
