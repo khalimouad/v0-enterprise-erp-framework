@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
       }
 
       fullResponse = `[DEMO MODE] ${demoResponse}`
+      console.log("[v0] Demo mode activated, returning:", fullResponse.substring(0, 50))
     }
 
     return NextResponse.json({

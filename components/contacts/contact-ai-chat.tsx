@@ -69,8 +69,13 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: input,
-          contact: contact,
+          question: input,
+          context: {
+            contactName: contact.name,
+            type: contact.type,
+            status: contact.status,
+            tags: contact.tags,
+          },
           conversationHistory: messages,
         }),
       })
@@ -80,11 +85,10 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
       }
 
       const data = await response.json()
-
       const assistantMessage: ChatMessage = {
         id: String(Date.now() + 1),
         type: "assistant",
-        content: data.response,
+        content: data.response || "Désolé, je n'ai pas pu générer de réponse.",
         timestamp: new Date().toLocaleTimeString("fr-FR"),
       }
 
