@@ -68,6 +68,7 @@ interface ContactsListViewProps {
   onRowClick: (contact: Contact) => void
   onEdit: (contact: Contact) => void
   onCreateContact: () => void
+  onOpenFilters?: () => void
   colorTheme: ColorTheme
 }
 
@@ -458,6 +459,20 @@ export function ContactsListView({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Advanced Filters Button */}
+          {onOpenFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={onOpenFilters}
+              title="Open advanced filters"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Advanced
+            </Button>
+          )}
         </div>
 
         {/* View Mode Toggle & Actions */}

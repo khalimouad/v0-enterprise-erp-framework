@@ -6,6 +6,7 @@ import { ERPHeader, type ColorTheme } from "@/components/erp-header"
 import { ContactsListView } from "@/components/contacts/contacts-list-view"
 import { ContactPanel } from "@/components/contacts/contact-panel"
 import { ContactEditPanel } from "@/components/contacts/contact-edit-panel"
+import { ContactsFilters } from "@/components/contacts/contacts-filters"
 import type { Contact } from "@/lib/types"
 
 // Sample data - Extended
@@ -209,6 +210,7 @@ export default function ContactsPage() {
   const [editingContact, setEditingContact] = React.useState<Contact | null>(null)
   const [contacts, setContacts] = React.useState(sampleContacts)
   const [colorTheme, setColorTheme] = React.useState<ColorTheme>("slate")
+  const [filtersOpen, setFiltersOpen] = React.useState(false)
 
   const handleRowClick = (contact: Contact) => {
     setSelectedContact(contact)
@@ -243,6 +245,12 @@ export default function ContactsPage() {
     <div className="min-h-screen bg-background">
       <ERPHeader colorTheme={colorTheme} onThemeChange={setColorTheme} />
       <main className="flex h-[calc(100vh-7rem)]">
+        {/* Filters Panel */}
+        <ContactsFilters
+          isOpen={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+        />
+
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <ContactsListView
@@ -251,6 +259,7 @@ export default function ContactsPage() {
             onRowClick={handleRowClick}
             onEdit={handleEdit}
             onCreateContact={handleCreateContact}
+            onOpenFilters={() => setFiltersOpen(true)}
             colorTheme={colorTheme}
           />
         </div>
