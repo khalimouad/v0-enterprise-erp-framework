@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { ERPHeader, type ColorTheme } from "@/components/erp-header"
 import { ContactsListView } from "@/components/contacts/contacts-list-view"
 import { ContactPanel } from "@/components/contacts/contact-panel"
@@ -203,6 +204,7 @@ const sampleContacts: Contact[] = [
 ]
 
 export default function ContactsPage() {
+  const router = useRouter()
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null)
   const [editingContact, setEditingContact] = React.useState<Contact | null>(null)
   const [contacts, setContacts] = React.useState(sampleContacts)
@@ -214,8 +216,8 @@ export default function ContactsPage() {
   }
 
   const handleEdit = (contact: Contact) => {
-    setEditingContact(contact)
-    setSelectedContact(null)
+    // Navigate to full-page edit route instead of opening side panel
+    router.push(`/contacts/${contact.id}/edit`)
   }
 
   const handleClosePanel = () => {
