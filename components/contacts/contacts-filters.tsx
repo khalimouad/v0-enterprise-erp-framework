@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { X, Search } from "lucide-react"
+import { X, Search, Plus, Trash2, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,29 +12,169 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface ContactsFiltersProps {
   isOpen: boolean
   onClose: () => void
 }
 
+type FilterType = "creationDate" | "modificationDate" | "createdBy" | "contacts"
+
 export function ContactsFilters({ isOpen, onClose }: ContactsFiltersProps) {
+  const [aiFilter, setAiFilter] = React.useState("")
+  const [activeFilters, setActiveFilters] = React.useState<FilterType[]>([])
+  
+  // Individual filter states
   const [creationDateFrom, setCreationDateFrom] = React.useState("")
   const [creationDateTo, setCreationDateTo] = React.useState("")
   const [modificationDateFrom, setModificationDateFrom] = React.useState("")
   const [modificationDateTo, setModificationDateTo] = React.useState("")
   const [createdBy, setCreatedBy] = React.useState("")
   const [hasContacts, setHasContacts] = React.useState("")
-  const [aiFilter, setAiFilter] = React.useState("")
 
-  const handleReset = () => {
-    setCreationDateFrom("")
-    setCreationDateTo("")
-    setModificationDateFrom("")
-    setModificationDateTo("")
-    setCreatedBy("")
-    setHasContacts("")
-    setAiFilter("")
+  const availableFilters = [
+    { id: "creationDate" as FilterType, label: "Date de Création" },
+    { id: "modificationDate" as FilterType, label: "Date de Modification" },
+    { id: "createdBy" as FilterType, label: "Créé par" },
+    { id: "contacts" as FilterType, label: "Personnes de Contact" },
+  ]
+
+  const addFilter = (filterId: FilterType) => {
+    if (!activeFilters.includes(filterId)) {
+      setActiveFilters([...activeFilters, filterId])
+    }
+  }
+
+  const removeFilter = (filterId: FilterType) => {
+    setActiveFilters(activeFilters.filter((f) => f !== filterId))
+  }
+
+  const renderFilter = (filterId: FilterType) => {
+    switch (filterId) {
+      case "creationDate":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Date de Création</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              type="date"
+              value={creationDateFrom}
+              onChange={(e) => setCreationDateFrom(e.target.value)}
+              placeholder="Du"
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+            <Input
+              type="date"
+              value={creationDateTo}
+              onChange={(e) => setCreationDateTo(e.target.value)}
+              placeholder="Au"
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "modificationDate":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Date de Modification</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Input
+              type="date"
+              value={modificationDateFrom}
+              onChange={(e) => setModificationDateFrom(e.target.value)}
+              placeholder="Du"
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+            <Input
+              type="date"
+              value={modificationDateTo}
+              onChange={(e) => setModificationDateTo(e.target.value)}
+              placeholder="Au"
+              className="border-2 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+        )
+
+      case "createdBy":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Créé par</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Select value={createdBy} onValueChange={setCreatedBy}>
+              <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+                <SelectItem value="support">Support</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )
+
+      case "contacts":
+        return (
+          <div key={filterId} className="space-y-2 rounded-lg border-2 border-slate-200 p-3 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <Label className="font-semibold">Personnes de Contact</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeFilter(filterId)}
+                className="h-6 w-6 p-0"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+            <Select value={hasContacts} onValueChange={setHasContacts}>
+              <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="with">Avec contacts</SelectItem>
+                <SelectItem value="without">Sans contacts</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )
+
+      default:
+        return null
+    }
   }
 
   return (
@@ -70,128 +210,82 @@ export function ContactsFilters({ isOpen, onClose }: ContactsFiltersProps) {
 
         {/* Filters Content */}
         <div className="overflow-y-auto p-6" style={{ height: "calc(100vh - 140px)" }}>
-          <div className="space-y-6">
-            {/* Creation Date */}
-            <div className="space-y-2">
-              <Label className="font-semibold">Date de Création</Label>
-              <div className="space-y-2">
-                <Input
-                  type="date"
-                  value={creationDateFrom}
-                  onChange={(e) => setCreationDateFrom(e.target.value)}
-                  placeholder="Du"
-                  className="border-2 border-slate-200 dark:border-slate-600"
-                />
-                <Input
-                  type="date"
-                  value={creationDateTo}
-                  onChange={(e) => setCreationDateTo(e.target.value)}
-                  placeholder="Au"
-                  className="border-2 border-slate-200 dark:border-slate-600"
-                />
-              </div>
-            </div>
-
-            {/* Last Modification Date */}
-            <div className="space-y-2">
-              <Label className="font-semibold">Date de Dernière Modification</Label>
-              <div className="space-y-2">
-                <Input
-                  type="date"
-                  value={modificationDateFrom}
-                  onChange={(e) => setModificationDateFrom(e.target.value)}
-                  placeholder="Du"
-                  className="border-2 border-slate-200 dark:border-slate-600"
-                />
-                <Input
-                  type="date"
-                  value={modificationDateTo}
-                  onChange={(e) => setModificationDateTo(e.target.value)}
-                  placeholder="Au"
-                  className="border-2 border-slate-200 dark:border-slate-600"
-                />
-              </div>
-            </div>
-
-            {/* Created By */}
-            <div className="space-y-2">
-              <Label htmlFor="createdBy" className="font-semibold">
-                Créé par
-              </Label>
-              <Select value={createdBy} onValueChange={setCreatedBy}>
-                <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="admin">Administrateur</SelectItem>
-                  <SelectItem value="sales">Commercial</SelectItem>
-                  <SelectItem value="support">Support</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Number of Contacts */}
-            <div className="space-y-2">
-              <Label htmlFor="hasContacts" className="font-semibold">
-                Personnes de Contact
-              </Label>
-              <Select value={hasContacts} onValueChange={setHasContacts}>
-                <SelectTrigger className="border-2 border-slate-200 dark:border-slate-600">
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="with">Avec contacts</SelectItem>
-                  <SelectItem value="without">Sans contacts</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* AI Filter */}
-            <div className="space-y-2">
-              <Label htmlFor="aiFilter" className="font-semibold">
+          <div className="space-y-4">
+            {/* AI Filter - Always Visible */}
+            <div className="space-y-2 rounded-lg border-2 border-blue-300 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900">
+              <Label className="font-semibold text-blue-900 dark:text-blue-100">
                 Filtre IA
               </Label>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Décrivez ce que vous cherchez et l'IA filtrera les contacts
+              <Input
+                placeholder="Décrivez ce que vous recherchez..."
+                value={aiFilter}
+                onChange={(e) => setAiFilter(e.target.value)}
+                className="border-2 border-blue-300 bg-white dark:border-blue-600 dark:bg-slate-800"
+              />
+              <p className="text-xs text-blue-800 dark:text-blue-200">
+                Utilisez le langage naturel pour filtrer vos contacts
               </p>
-              <div className="relative">
-                <Input
-                  id="aiFilter"
-                  value={aiFilter}
-                  onChange={(e) => setAiFilter(e.target.value)}
-                  placeholder="Ex: Clients de France avec plus de 5 contacts..."
-                  className="border-2 border-slate-200 pl-10 dark:border-slate-600"
-                />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-              </div>
             </div>
+
+            {/* Dynamic Filters */}
+            {activeFilters.length > 0 && (
+              <div className="space-y-3">
+                {activeFilters.map((filterId) => renderFilter(filterId))}
+              </div>
+            )}
+
+            {/* Add Filter Button */}
+            {activeFilters.length < availableFilters.length && (
+              <div className="pt-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2 border-2 border-dashed border-slate-300 dark:border-slate-600"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Ajouter un filtre
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    {availableFilters
+                      .filter((f) => !activeFilters.includes(f.id))
+                      .map((filter) => (
+                        <DropdownMenuItem
+                          key={filter.id}
+                          onClick={() => addFilter(filter.id)}
+                        >
+                          {filter.label}
+                        </DropdownMenuItem>
+                      ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="border-t-2 border-slate-300 bg-gradient-to-r from-slate-50 to-white px-6 py-3 dark:border-slate-700 dark:from-slate-800 dark:to-slate-900">
+        {/* Footer Buttons */}
+        <div className="border-t-2 border-slate-300 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 border-2 border-slate-300 dark:border-slate-600"
-              onClick={handleReset}
+              className="flex-1 border-2"
+              onClick={() => {
+                setCreationDateFrom("")
+                setCreationDateTo("")
+                setModificationDateFrom("")
+                setModificationDateTo("")
+                setCreatedBy("")
+                setHasContacts("")
+                setAiFilter("")
+                setActiveFilters([])
+              }}
             >
               Réinitialiser
             </Button>
-            <Button
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
-              onClick={() => console.log("[v0] Apply filters", {
-                creationDateFrom,
-                creationDateTo,
-                modificationDateFrom,
-                modificationDateTo,
-                createdBy,
-                hasContacts,
-                aiFilter,
-              })}
-            >
+            <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
               Appliquer
             </Button>
           </div>
