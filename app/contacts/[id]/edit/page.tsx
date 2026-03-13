@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Download, Share2, MoreVertical } from "lucide-react"
+import { ArrowLeft, Download, Share2, Printer, Copy, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -121,12 +121,12 @@ export default function ContactEditPage({
             </Button>
             <Button
               variant="outline"
-              size="sm"
-              className="gap-2 border-slate-300 dark:border-slate-600"
+              size="icon"
+              className="h-9 w-9 border-slate-300 dark:border-slate-600"
               onClick={() => console.log("[v0] Share contact")}
+              title="Partager"
             >
               <Share2 className="h-4 w-4" />
-              Partager
             </Button>
 
             {/* More Actions Menu */}
@@ -142,16 +142,18 @@ export default function ContactEditPage({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => console.log("[v0] Duplicate")}>
-                  Dupliquer le contact
+                  <Copy className="mr-2 h-4 w-4" />
+                  Dupliquer
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => console.log("[v0] Print")}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Imprimer
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => console.log("[v0] Archive")}>
                   Archiver
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => console.log("[v0] Export PDF")}>
                   Exporter en PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => console.log("[v0] Print")}>
-                  Imprimer
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
