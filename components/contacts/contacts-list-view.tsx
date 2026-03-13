@@ -154,6 +154,7 @@ export function ContactsListView({
   onRowClick,
   onEdit,
   onCreateContact,
+  onOpenFilters,
   colorTheme,
 }: ContactsListViewProps) {
   const [viewMode, setViewMode] = React.useState<ViewMode>("table")
