@@ -39,6 +39,14 @@ export interface Contact {
   // Financial
   creditLimit?: number
   isCreditAllowed?: boolean
+
+  // Contacts (people)
+  contacts?: Array<{
+    name: string
+    phone?: string
+    email?: string
+    function?: string
+  }>
 }
 
 export const contactStatusConfig = {

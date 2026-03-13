@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Trash2, Save } from "lucide-react"
+import { Trash2, Save, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -152,7 +152,7 @@ export function ContactDetailsForm({
       {/* Tabs Section */}
       <div className="flex-1 overflow-hidden">
         <Tabs defaultValue="general" className="flex h-full flex-col">
-          <TabsList className="grid w-full grid-cols-5 gap-0 border-b-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 dark:border-slate-600 dark:from-slate-700 dark:to-slate-600">
+          <TabsList className="grid w-full grid-cols-6 gap-0 border-b-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 dark:border-slate-600 dark:from-slate-700 dark:to-slate-600">
             <TabsTrigger value="general" className="text-xs font-semibold md:text-sm">
               Général
             </TabsTrigger>
@@ -168,10 +168,13 @@ export function ContactDetailsForm({
             <TabsTrigger value="company" className="text-xs font-semibold md:text-sm">
               Entreprise
             </TabsTrigger>
+            <TabsTrigger value="contacts" className="text-xs font-semibold md:text-sm">
+              Contacts
+            </TabsTrigger>
           </TabsList>
 
           {/* General Tab */}
-          <TabsContent value="general" className="flex-1 overflow-y-auto p-6">
+          <TabsContent value="general" className="flex-1 overflow-y-auto p-6 min-h-96">
           <div className="space-y-6">
             <div>
               <h3 className="mb-4 text-lg font-semibold">Classification</h3>
@@ -240,7 +243,7 @@ export function ContactDetailsForm({
         {/* Contact Info Tab */}
         <TabsContent
           value="contact"
-          className="flex-1 overflow-y-auto p-6"
+          className="flex-1 overflow-y-auto p-6 min-h-96"
         >
           <div className="space-y-6">
             <div>
@@ -303,7 +306,7 @@ export function ContactDetailsForm({
         {/* Address Tab */}
         <TabsContent
           value="address"
-          className="flex-1 overflow-y-auto p-6"
+          className="flex-1 overflow-y-auto p-6 min-h-96"
         >
           <div className="space-y-6">
             <div>
@@ -398,7 +401,7 @@ export function ContactDetailsForm({
         {/* Tax & Compliance Tab */}
         <TabsContent
           value="tax"
-          className="flex-1 overflow-y-auto p-6"
+          className="flex-1 overflow-y-auto p-6 min-h-96"
         >
           <div className="space-y-6">
             <div>
@@ -497,7 +500,7 @@ export function ContactDetailsForm({
         {/* Company Tab */}
         <TabsContent
           value="company"
-          className="flex-1 overflow-y-auto p-6"
+          className="flex-1 overflow-y-auto p-6 min-h-96"
         >
           <div className="space-y-6">
             <div>
@@ -575,6 +578,118 @@ export function ContactDetailsForm({
                   Crédit Autorisé
                 </Label>
               </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Contacts Tab */}
+        <TabsContent
+          value="contacts"
+          className="flex-1 overflow-y-auto p-6 min-h-96"
+        >
+          <div className="space-y-4">
+            <div>
+              <h3 className="mb-4 text-lg font-semibold">Personnes de Contact</h3>
+              <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+                Ajoutez les personnes de contact de cette entreprise
+              </p>
+            </div>
+
+            {/* Contact Lines Table */}
+            <div className="overflow-x-auto rounded-lg border-2 border-slate-200 dark:border-slate-600">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b-2 border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Nom</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Fonction</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Email</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Téléphone</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contact.contacts && contact.contacts.length > 0 ? (
+                    contact.contacts.map((cont: any, index: number) => (
+                      <tr key={index} className="border-b border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
+                        <td className="px-4 py-3 text-sm">{cont.name || "-"}</td>
+                        <td className="px-4 py-3 text-sm">{cont.function || "-"}</td>
+                        <td className="px-4 py-3 text-sm">{cont.email || "-"}</td>
+                        <td className="px-4 py-3 text-sm">{cont.phone || "-"}</td>
+                        <td className="px-4 py-3 text-center">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => console.log("[v0] Delete contact", index)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-6 text-center text-sm text-slate-500">
+                        Aucune personne de contact ajoutée
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Add New Contact Form */}
+            <div className="mt-6 rounded-lg border-2 border-blue-300 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900">
+              <h4 className="mb-4 font-semibold">Ajouter une Personne de Contact</h4>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="newContactName" className="text-sm font-medium">
+                    Nom
+                  </Label>
+                  <Input
+                    id="newContactName"
+                    placeholder="Nom et Prénom"
+                    className="mt-1 bg-white dark:bg-slate-800"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newContactFunction" className="text-sm font-medium">
+                    Fonction
+                  </Label>
+                  <Input
+                    id="newContactFunction"
+                    placeholder="Directeur, Responsable, etc."
+                    className="mt-1 bg-white dark:bg-slate-800"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newContactEmail" className="text-sm font-medium">
+                    Email
+                  </Label>
+                  <Input
+                    id="newContactEmail"
+                    type="email"
+                    placeholder="email@example.com"
+                    className="mt-1 bg-white dark:bg-slate-800"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newContactPhone" className="text-sm font-medium">
+                    Téléphone
+                  </Label>
+                  <Input
+                    id="newContactPhone"
+                    placeholder="+212 XXX XX XX XX"
+                    className="mt-1 bg-white dark:bg-slate-800"
+                  />
+                </div>
+              </div>
+              <Button
+                className="mt-4 gap-2 bg-blue-600 hover:bg-blue-700"
+                onClick={() => console.log("[v0] Add new contact")}
+              >
+                <Plus className="h-4 w-4" />
+                Ajouter
+              </Button>
             </div>
           </div>
         </TabsContent>
