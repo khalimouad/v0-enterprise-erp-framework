@@ -43,10 +43,10 @@ export default function ContactCreatePage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Create New Contact</h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Add a new contact to your system
-              </p>
+            <h1 className="text-2xl font-bold">Créer un Nouveau Contact</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Ajouter un nouveau contact à votre système
+            </p>
             </div>
           </div>
         </div>

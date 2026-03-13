@@ -23,20 +23,20 @@ export function ContactChangeLog({ contactId }: ContactChangeLogProps) {
     {
       id: "1",
       timestamp: "2024-03-13 14:30",
-      user: "John Doe",
-      note: "Updated payment terms from Net 30 to Net 15",
+      user: "Jean Dupont",
+      note: "Conditions de paiement mises à jour de Net 30 à Net 15",
     },
     {
       id: "2",
       timestamp: "2024-03-12 10:15",
-      user: "Jane Smith",
-      note: "Changed status from Prospect to Active",
+      user: "Marie Smith",
+      note: "Statut changé de Prospect à Actif",
     },
     {
       id: "3",
       timestamp: "2024-03-10 09:45",
       user: "Mike Johnson",
-      note: "Added customer to VIP program",
+      note: "Client ajouté au programme VIP",
     },
   ])
   const [newNote, setNewNote] = React.useState("")
@@ -45,8 +45,8 @@ export function ContactChangeLog({ contactId }: ContactChangeLogProps) {
     if (newNote.trim()) {
       const entry: ChangeLogEntry = {
         id: String(Date.now()),
-        timestamp: new Date().toLocaleString(),
-        user: "Current User", // In real app, would get from auth context
+        timestamp: new Date().toLocaleString("fr-FR"),
+        user: "Utilisateur Actuel", // In real app, would get from auth context
         note: newNote,
       }
       setEntries([entry, ...entries])
@@ -62,9 +62,9 @@ export function ContactChangeLog({ contactId }: ContactChangeLogProps) {
     <div className="flex h-full flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
       {/* Add Note Section */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Add Note</label>
+        <label className="text-sm font-medium">Ajouter une Note</label>
         <Textarea
-          placeholder="Add a comment or note about this contact..."
+          placeholder="Ajouter un commentaire ou une note à propos de ce contact..."
           value={newNote}
           onChange={(e) => setNewNote(e.target.value)}
           className="min-h-20 resize-none bg-slate-50 text-sm dark:bg-slate-700"
@@ -76,13 +76,13 @@ export function ContactChangeLog({ contactId }: ContactChangeLogProps) {
           disabled={!newNote.trim()}
         >
           <Plus className="h-4 w-4" />
-          Add Note
+          Ajouter une Note
         </Button>
       </div>
 
       {/* History List */}
       <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
-        <h3 className="mb-3 text-sm font-semibold">History</h3>
+        <h3 className="mb-3 text-sm font-semibold">Historique</h3>
         <ScrollArea className="h-96">
           <div className="space-y-3 pr-4">
             {entries.map((entry) => (

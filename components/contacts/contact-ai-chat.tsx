@@ -24,8 +24,8 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
     {
       id: "1",
       type: "assistant",
-      content: `Hi! I'm here to help you with ${contact.name}. You can ask me questions about this contact's details, history, or request suggestions. What would you like to know?`,
-      timestamp: new Date().toLocaleTimeString(),
+      content: `Bonjour ! Je suis là pour vous aider avec ${contact.name}. Vous pouvez me poser des questions sur les détails de ce contact, son historique ou me demander des suggestions. Que souhaitez-vous savoir ?`,
+      timestamp: new Date().toLocaleTimeString("fr-FR"),
     },
   ])
   const [input, setInput] = React.useState("")
@@ -54,7 +54,7 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
       id: String(Date.now()),
       type: "user",
       content: input,
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: new Date().toLocaleTimeString("fr-FR"),
     }
 
     setMessages((prev) => [...prev, userMessage])
@@ -85,7 +85,7 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
         id: String(Date.now() + 1),
         type: "assistant",
         content: data.response,
-        timestamp: new Date().toLocaleTimeString(),
+        timestamp: new Date().toLocaleTimeString("fr-FR"),
       }
 
       setMessages((prev) => [...prev, assistantMessage])
@@ -95,8 +95,8 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
         id: String(Date.now() + 1),
         type: "assistant",
         content:
-          "I'm having trouble connecting to the AI service. Please make sure Ollama is running on your system.",
-        timestamp: new Date().toLocaleTimeString(),
+          "Je rencontre une difficulté pour me connecter au service d'IA. Veuillez vous assurer qu'Ollama est en cours d'exécution sur votre système.",
+        timestamp: new Date().toLocaleTimeString("fr-FR"),
       }
       setMessages((prev) => [...prev, errorMessage])
     } finally {
@@ -144,7 +144,7 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
       <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
         <div className="flex gap-2">
           <Input
-            placeholder="Ask about this contact..."
+            placeholder="Posez une question sur ce contact..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => {

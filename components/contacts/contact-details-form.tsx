@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Save, X } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,8 +42,9 @@ export function ContactDetailsForm({
     }
   }
 
-  const handleRemoveTag = (tag: string) => {
-    handleChange("tags", contact.tags?.filter((t) => t !== tag) || [])
+  const handleRemoveTag = (tagToRemove: string) => {
+    const updatedTags = (contact.tags || []).filter((t) => t !== tagToRemove)
+    handleChange("tags", updatedTags)
   }
 
   return (
@@ -54,13 +55,13 @@ export function ContactDetailsForm({
           {/* Name Field */}
           <div>
             <Label htmlFor="name" className="text-sm font-medium">
-              Contact Name
+              Nom du Contact
             </Label>
             <Input
               id="name"
               value={contact.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Enter contact name"
+              placeholder="Entrez le nom du contact"
               className="mt-1 bg-white dark:bg-slate-700"
             />
           </div>
@@ -69,13 +70,13 @@ export function ContactDetailsForm({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <Label htmlFor="ice" className="text-sm font-medium">
-                ICE Number
+                Numéro ICE
               </Label>
               <Input
                 id="ice"
                 value={contact.ice || ""}
                 onChange={(e) => handleChange("ice", e.target.value)}
-                placeholder="Tax ID number"
+                placeholder="Identifiant Client d'Entreprise"
                 className="mt-1 bg-white dark:bg-slate-700"
               />
             </div>
@@ -93,15 +94,15 @@ export function ContactDetailsForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="customer">Customer</SelectItem>
-                  <SelectItem value="supplier">Supplier</SelectItem>
-                  <SelectItem value="both">Customer & Supplier</SelectItem>
+                  <SelectItem value="customer">Client</SelectItem>
+                  <SelectItem value="supplier">Fournisseur</SelectItem>
+                  <SelectItem value="both">Client & Fournisseur</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label htmlFor="status" className="text-sm font-medium">
-                Status
+                Statut
               </Label>
               <Select
                 value={contact.status || "active"}
@@ -113,8 +114,8 @@ export function ContactDetailsForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="active">Actif</SelectItem>
+                  <SelectItem value="inactive">Inactif</SelectItem>
                   <SelectItem value="prospect">Prospect</SelectItem>
                 </SelectContent>
               </Select>
@@ -124,20 +125,24 @@ export function ContactDetailsForm({
           {/* Tags */}
           <div>
             <Label htmlFor="tags" className="text-sm font-medium">
-              Tags
+              Étiquettes
             </Label>
             <div className="mt-2 flex flex-wrap gap-2">
               {contact.tags?.map((tag) => (
                 <Badge
                   key={tag}
                   variant="secondary"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 pr-1"
                 >
                   {tag}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
+                  <button
+                    type="button"
                     onClick={() => handleRemoveTag(tag)}
-                  />
+                    className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-300 dark:hover:bg-slate-600"
+                    aria-label={`Supprimer l'étiquette ${tag}`}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
                 </Badge>
               ))}
             </div>
@@ -146,8 +151,13 @@ export function ContactDetailsForm({
                 id="tags"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleAddTag()}
-                placeholder="Add tag and press Enter"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleAddTag()
+                  }
+                }}
+                placeholder="Ajouter une étiquette et appuyer sur Entrée"
                 className="bg-white dark:bg-slate-700"
               />
               <Button
@@ -155,7 +165,7 @@ export function ContactDetailsForm({
                 variant="outline"
                 onClick={handleAddTag}
               >
-                Add
+                Ajouter
               </Button>
             </div>
           </div>
@@ -165,11 +175,11 @@ export function ContactDetailsForm({
       {/* Main Content Area with Tabs */}
       <Tabs defaultValue="general" className="flex flex-1 flex-col overflow-hidden">
         <TabsList className="border-b bg-slate-50 dark:bg-slate-800">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="contact">Contact Info</TabsTrigger>
-          <TabsTrigger value="address">Address</TabsTrigger>
-          <TabsTrigger value="tax">Tax & Compliance</TabsTrigger>
-          <TabsTrigger value="company">Company</TabsTrigger>
+          <TabsTrigger value="general">Général</TabsTrigger>
+          <TabsTrigger value="contact">Coordonnées</TabsTrigger>
+          <TabsTrigger value="address">Adresse</TabsTrigger>
+          <TabsTrigger value="tax">Fiscal</TabsTrigger>
+          <TabsTrigger value="company">Entreprise</TabsTrigger>
         </TabsList>
 
         {/* General Tab */}
@@ -179,11 +189,11 @@ export function ContactDetailsForm({
         >
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Ranking & Ratings</h3>
+              <h3 className="mb-4 text-lg font-semibold">Classification</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                   <Label htmlFor="customerRank" className="text-sm font-medium">
-                    Customer Rank
+                    Classement Client
                   </Label>
                   <Select
                     value={String(contact.customerRank || "1")}
@@ -197,7 +207,7 @@ export function ContactDetailsForm({
                     <SelectContent>
                       {[1, 2, 3, 4, 5].map((rank) => (
                         <SelectItem key={rank} value={String(rank)}>
-                          {rank} Star{rank !== 1 ? "s" : ""}
+                          {rank} Étoile{rank !== 1 ? "s" : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -205,7 +215,7 @@ export function ContactDetailsForm({
                 </div>
                 <div>
                   <Label htmlFor="supplierRank" className="text-sm font-medium">
-                    Supplier Rank
+                    Classement Fournisseur
                   </Label>
                   <Select
                     value={String(contact.supplierRank || "1")}
@@ -219,7 +229,7 @@ export function ContactDetailsForm({
                     <SelectContent>
                       {[1, 2, 3, 4, 5].map((rank) => (
                         <SelectItem key={rank} value={String(rank)}>
-                          {rank} Star{rank !== 1 ? "s" : ""}
+                          {rank} Étoile{rank !== 1 ? "s" : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -227,13 +237,13 @@ export function ContactDetailsForm({
                 </div>
                 <div>
                   <Label htmlFor="industry" className="text-sm font-medium">
-                    Industry
+                    Secteur d'Activité
                   </Label>
                   <Input
                     id="industry"
                     value={contact.industry || ""}
                     onChange={(e) => handleChange("industry", e.target.value)}
-                    placeholder="Industry sector"
+                    placeholder="Secteur industriel"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
@@ -249,7 +259,7 @@ export function ContactDetailsForm({
         >
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Contact Details</h3>
+              <h3 className="mb-4 text-lg font-semibold">Détails de Contact</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                   <Label htmlFor="email" className="text-sm font-medium">
@@ -260,43 +270,43 @@ export function ContactDetailsForm({
                     type="email"
                     value={contact.email}
                     onChange={(e) => handleChange("email", e.target.value)}
-                    placeholder="email@example.com"
+                    placeholder="email@exemple.ma"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="phone" className="text-sm font-medium">
-                    Phone
+                    Téléphone
                   </Label>
                   <Input
                     id="phone"
                     value={contact.phone}
                     onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+212 (5XX) XXX-XXXX"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="mobile" className="text-sm font-medium">
-                    Mobile
+                    Téléphone Mobile
                   </Label>
                   <Input
                     id="mobile"
                     value={contact.mobile || ""}
                     onChange={(e) => handleChange("mobile", e.target.value)}
-                    placeholder="Mobile number"
+                    placeholder="+212 6XX XXX XXX"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="website" className="text-sm font-medium">
-                    Website
+                    Site Web
                   </Label>
                   <Input
                     id="website"
                     value={contact.website || ""}
                     onChange={(e) => handleChange("website", e.target.value)}
-                    placeholder="https://example.com"
+                    placeholder="https://example.ma"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
@@ -312,79 +322,88 @@ export function ContactDetailsForm({
         >
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Address Information</h3>
+              <h3 className="mb-4 text-lg font-semibold">Informations d'Adresse</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="md:col-span-3">
                   <Label htmlFor="address" className="text-sm font-medium">
-                    Street Address
+                    Adresse
                   </Label>
                   <Input
                     id="address"
                     value={contact.address || ""}
                     onChange={(e) => handleChange("address", e.target.value)}
-                    placeholder="Street address"
+                    placeholder="Adresse complète"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="city" className="text-sm font-medium">
-                    City
+                    Ville
                   </Label>
                   <Input
                     id="city"
                     value={contact.city || ""}
                     onChange={(e) => handleChange("city", e.target.value)}
-                    placeholder="City"
+                    placeholder="Ville"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="quartier" className="text-sm font-medium">
-                    Neighborhood
+                    Quartier
                   </Label>
                   <Input
                     id="quartier"
                     value={contact.quartier || ""}
                     onChange={(e) => handleChange("quartier", e.target.value)}
-                    placeholder="Quartier"
+                    placeholder="Quartier/Arrondissement"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="postalCode" className="text-sm font-medium">
-                    Postal Code
+                    Code Postal
                   </Label>
                   <Input
                     id="postalCode"
                     value={contact.postalCode || ""}
                     onChange={(e) => handleChange("postalCode", e.target.value)}
-                    placeholder="Postal code"
+                    placeholder="Code postal"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="region" className="text-sm font-medium">
-                    Region
+                    Région
                   </Label>
                   <Input
                     id="region"
                     value={contact.region || ""}
                     onChange={(e) => handleChange("region", e.target.value)}
-                    placeholder="Region"
+                    placeholder="Région/Wilaya"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
                 <div>
                   <Label htmlFor="country" className="text-sm font-medium">
-                    Country
+                    Pays
                   </Label>
-                  <Input
-                    id="country"
+                  <Select
                     value={contact.country || "Maroc"}
-                    onChange={(e) => handleChange("country", e.target.value)}
-                    placeholder="Country"
-                    className="mt-1 bg-slate-50 dark:bg-slate-700"
-                  />
+                    onValueChange={(value) => handleChange("country", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-slate-50 dark:bg-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Maroc">Maroc</SelectItem>
+                      <SelectItem value="France">France</SelectItem>
+                      <SelectItem value="Belgique">Belgique</SelectItem>
+                      <SelectItem value="Suisse">Suisse</SelectItem>
+                      <SelectItem value="Canada">Canada</SelectItem>
+                      <SelectItem value="Autre">Autre</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -398,11 +417,11 @@ export function ContactDetailsForm({
         >
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Tax Settings</h3>
+              <h3 className="mb-4 text-lg font-semibold">Paramètres Fiscaux</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                   <Label htmlFor="taxRegime" className="text-sm font-medium">
-                    Tax Regime
+                    Régime Fiscal
                   </Label>
                   <Select
                     value={contact.taxRegime || "real"}
@@ -415,27 +434,27 @@ export function ContactDetailsForm({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="foret">Forfait</SelectItem>
-                      <SelectItem value="real">Real</SelectItem>
-                      <SelectItem value="simplified">Simplified</SelectItem>
+                      <SelectItem value="real">Régime Réel</SelectItem>
+                      <SelectItem value="simplified">Régime Simplifié</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="vatNumber" className="text-sm font-medium">
-                    VAT Number
+                    Numéro TVA
                   </Label>
                   <Input
                     id="vatNumber"
                     value={contact.vatNumber || ""}
                     onChange={(e) => handleChange("vatNumber", e.target.value)}
-                    placeholder="VAT number"
+                    placeholder="Numéro de TVA"
                     className="mt-1 bg-slate-50 dark:bg-slate-700"
                   />
                 </div>
               </div>
             </div>
             <div className="border-t pt-4">
-              <h3 className="mb-4 text-lg font-semibold">VAT Status</h3>
+              <h3 className="mb-4 text-lg font-semibold">Statut TVA</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <input
@@ -446,7 +465,7 @@ export function ContactDetailsForm({
                     className="h-4 w-4 rounded"
                   />
                   <Label htmlFor="vatSubject" className="text-sm font-medium">
-                    Subject to VAT
+                    Assujetti à la TVA
                   </Label>
                 </div>
                 <div className="flex items-center gap-3">
@@ -458,7 +477,7 @@ export function ContactDetailsForm({
                     className="h-4 w-4 rounded"
                   />
                   <Label htmlFor="isSuspended" className="text-sm font-medium">
-                    VAT Suspended
+                    TVA Suspendue
                   </Label>
                 </div>
                 <div className="flex items-center gap-3">
@@ -470,7 +489,7 @@ export function ContactDetailsForm({
                     className="h-4 w-4 rounded"
                   />
                   <Label htmlFor="isProvisional" className="text-sm font-medium">
-                    Provisional (No ICE Yet)
+                    Provisoire (ICE Non Attribué)
                   </Label>
                 </div>
                 <div className="flex items-center gap-3">
@@ -482,7 +501,7 @@ export function ContactDetailsForm({
                     className="h-4 w-4 rounded"
                   />
                   <Label htmlFor="isExport" className="text-sm font-medium">
-                    Export Business
+                    Activité d'Export
                   </Label>
                 </div>
               </div>
@@ -497,11 +516,11 @@ export function ContactDetailsForm({
         >
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Financial Settings</h3>
+              <h3 className="mb-4 text-lg font-semibold">Paramètres Financiers</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                   <Label htmlFor="currency" className="text-sm font-medium">
-                    Currency
+                    Devise
                   </Label>
                   <Select
                     value={contact.currency || "MAD"}
@@ -513,19 +532,19 @@ export function ContactDetailsForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MAD">MAD (Moroccan Dirham)</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
+                      <SelectItem value="MAD">MAD (Dirham Marocain)</SelectItem>
+                      <SelectItem value="USD">USD (Dollar US)</SelectItem>
+                      <SelectItem value="EUR">EUR (Euro)</SelectItem>
+                      <SelectItem value="GBP">GBP (Livre Sterling)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="paymentTerms" className="text-sm font-medium">
-                    Payment Terms
+                    Conditions de Paiement
                   </Label>
                   <Select
-                    value={contact.paymentTerms || "Net 30 Days"}
+                    value={contact.paymentTerms || "net30"}
                     onValueChange={(value) =>
                       handleChange("paymentTerms", value)
                     }
@@ -534,64 +553,70 @@ export function ContactDetailsForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Immediate">Immediate</SelectItem>
-                      <SelectItem value="Net 15 Days">Net 15 Days</SelectItem>
-                      <SelectItem value="Net 30 Days">Net 30 Days</SelectItem>
-                      <SelectItem value="Net 45 Days">Net 45 Days</SelectItem>
-                      <SelectItem value="Net 60 Days">Net 60 Days</SelectItem>
+                      <SelectItem value="immediate">Immédiat</SelectItem>
+                      <SelectItem value="net15">Net 15 jours</SelectItem>
+                      <SelectItem value="net30">Net 30 jours</SelectItem>
+                      <SelectItem value="net60">Net 60 jours</SelectItem>
+                      <SelectItem value="net90">Net 90 jours</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label htmlFor="creditLimit" className="text-sm font-medium">
+                    Limite de Crédit (MAD)
+                  </Label>
+                  <Input
+                    id="creditLimit"
+                    type="number"
+                    value={contact.creditLimit || ""}
+                    onChange={(e) => handleChange("creditLimit", parseFloat(e.target.value))}
+                    placeholder="Montant limite"
+                    className="mt-1 bg-slate-50 dark:bg-slate-700"
+                  />
                 </div>
               </div>
             </div>
             <div className="border-t pt-4">
-              <h3 className="mb-4 text-lg font-semibold">Credit</h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="isCreditAllowed"
-                    checked={contact.isCreditAllowed || false}
-                    onChange={(e) => handleChange("isCreditAllowed", e.target.checked)}
-                    className="h-4 w-4 rounded"
-                  />
-                  <Label htmlFor="isCreditAllowed" className="text-sm font-medium">
-                    Credit Allowed
-                  </Label>
-                </div>
-                {contact.isCreditAllowed && (
-                  <div>
-                    <Label htmlFor="creditLimit" className="text-sm font-medium">
-                      Credit Limit
-                    </Label>
-                    <Input
-                      id="creditLimit"
-                      type="number"
-                      value={contact.creditLimit || 0}
-                      onChange={(e) =>
-                        handleChange("creditLimit", parseFloat(e.target.value))
-                      }
-                      placeholder="0.00"
-                      className="mt-1 bg-slate-50 dark:bg-slate-700"
-                    />
-                  </div>
-                )}
+              <h3 className="mb-4 text-lg font-semibold">Crédit</h3>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isCreditAllowed"
+                  checked={contact.isCreditAllowed || false}
+                  onChange={(e) => handleChange("isCreditAllowed", e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
+                <Label htmlFor="isCreditAllowed" className="text-sm font-medium">
+                  Crédit Autorisé
+                </Label>
               </div>
             </div>
           </div>
         </TabsContent>
       </Tabs>
 
-      {/* Save Button Footer */}
-      <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800">
+      {/* Footer with Action Buttons */}
+      <div className="border-t border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800">
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button onClick={onSave} className="gap-2">
-            <Save className="h-4 w-4" />
-            Save Changes
-          </Button>
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+            >
+              Annuler
+            </Button>
+          )}
+          {onSave && (
+            <Button
+              type="button"
+              onClick={onSave}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Enregistrer
+            </Button>
+          )}
         </div>
       </div>
     </div>

@@ -62,12 +62,12 @@ export default function ContactEditPage({
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Contact not found</h1>
+          <h1 className="text-2xl font-bold">Contact non trouvé</h1>
           <Button
             onClick={() => router.push("/contacts")}
             className="mt-4"
           >
-            Back to Contacts
+            Retour aux Contacts
           </Button>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function ContactEditPage({
           <div>
             <h1 className="text-2xl font-bold">{contact.name}</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Editing contact information
+              Modification des informations de contact
             </p>
           </div>
         </div>
