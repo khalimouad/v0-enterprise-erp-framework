@@ -7,11 +7,11 @@ import {
   DollarSign,
   Package,
   Users,
-  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
   Plus,
 } from "lucide-react"
+import Link from "next/link"
 
 export default function DashboardPage() {
   return (
@@ -25,10 +25,12 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-foreground">Sales Dashboard</h1>
             <p className="text-muted-foreground">Welcome back, John. Here&apos;s what&apos;s happening today.</p>
           </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Order
-          </Button>
+          <Link href="/sales">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Order
+            </Button>
+          </Link>
         </div>
 
         {/* Stats Grid */}
@@ -106,9 +108,11 @@ export default function DashboardPage() {
                 <CardTitle>Recent Orders</CardTitle>
                 <CardDescription>You have 265 orders this month</CardDescription>
               </div>
-              <Button variant="outline" size="sm">
-                View All
-              </Button>
+              <Link href="/sales">
+                <Button variant="outline" size="sm">
+                  View All
+                </Button>
+              </Link>
             </div>
           </CardHeader>
           <CardContent>

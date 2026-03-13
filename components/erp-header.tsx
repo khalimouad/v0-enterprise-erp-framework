@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Users,
   Package,
@@ -34,6 +35,7 @@ import {
   Shield,
   Database,
   Globe,
+  type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -48,17 +50,33 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 
-// Module configuration with sub-navigation items
-const modules = [
+// Sub-item type
+interface SubItem {
+  label: string
+  href: string
+  icon: LucideIcon
+}
+
+// Module type with children as the submenu
+interface Module {
+  id: string
+  label: string
+  icon: LucideIcon
+  href: string
+  children: SubItem[]
+}
+
+// Module configuration - children ARE the horizontal submenu items
+const modules: Module[] = [
   {
     id: "contacts",
     label: "Contacts",
     icon: Users,
     href: "/contacts",
-    subItems: [
+    children: [
       { label: "Customers", href: "/contacts/customers", icon: Users },
       { label: "Suppliers", href: "/contacts/suppliers", icon: Truck },
-      { label: "All Contacts", href: "/contacts/all", icon: UserCircle },
+      { label: "All Contacts", href: "/contacts", icon: UserCircle },
       { label: "Configuration", href: "/contacts/config", icon: Cog },
     ],
   },
@@ -67,7 +85,7 @@ const modules = [
     label: "Products",
     icon: Package,
     href: "/products",
-    subItems: [
+    children: [
       { label: "Catalog", href: "/products/catalog", icon: Package },
       { label: "Categories", href: "/products/categories", icon: ListOrdered },
       { label: "Price Lists", href: "/products/pricelists", icon: DollarSign },
@@ -79,9 +97,9 @@ const modules = [
     label: "Sales",
     icon: ShoppingCart,
     href: "/sales",
-    subItems: [
+    children: [
       { label: "Quotations", href: "/sales/quotations", icon: FileText },
-      { label: "Orders", href: "/sales/orders", icon: ClipboardList },
+      { label: "Orders", href: "/sales", icon: ClipboardList },
       { label: "Customers", href: "/sales/customers", icon: Users },
       { label: "Reports", href: "/sales/reports", icon: BarChart3 },
       { label: "Configuration", href: "/sales/config", icon: Cog },
@@ -92,7 +110,7 @@ const modules = [
     label: "Purchases",
     icon: Truck,
     href: "/purchases",
-    subItems: [
+    children: [
       { label: "RFQs", href: "/purchases/rfqs", icon: FileText },
       { label: "Purchase Orders", href: "/purchases/orders", icon: ClipboardList },
       { label: "Vendors", href: "/purchases/vendors", icon: Users },
@@ -105,7 +123,7 @@ const modules = [
     label: "Inventory",
     icon: Warehouse,
     href: "/inventory",
-    subItems: [
+    children: [
       { label: "Stock", href: "/inventory/stock", icon: Package },
       { label: "Transfers", href: "/inventory/transfers", icon: ArrowLeftRight },
       { label: "Warehouses", href: "/inventory/warehouses", icon: Warehouse },
@@ -118,13 +136,12 @@ const modules = [
     label: "Accounting",
     icon: Calculator,
     href: "/accounting",
-    subItems: [
+    children: [
       { label: "Invoices", href: "/accounting/invoices", icon: Receipt },
       { label: "Bills", href: "/accounting/bills", icon: FileText },
       { label: "Journal Entries", href: "/accounting/journal", icon: BookOpen },
       { label: "Chart of Accounts", href: "/accounting/accounts", icon: ListOrdered },
       { label: "Reports", href: "/accounting/reports", icon: BarChart3 },
-      { label: "Configuration", href: "/accounting/config", icon: Cog },
     ],
   },
   {
@@ -132,7 +149,7 @@ const modules = [
     label: "Payments",
     icon: CreditCard,
     href: "/payments",
-    subItems: [
+    children: [
       { label: "Payments", href: "/payments/list", icon: Wallet },
       { label: "Reconciliation", href: "/payments/reconciliation", icon: ArrowLeftRight },
       { label: "Reports", href: "/payments/reports", icon: TrendingUp },
@@ -144,7 +161,7 @@ const modules = [
     label: "Settings",
     icon: Settings,
     href: "/settings",
-    subItems: [
+    children: [
       { label: "Users", href: "/settings/users", icon: UserCog },
       { label: "Roles & Permissions", href: "/settings/roles", icon: Shield },
       { label: "Company", href: "/settings/company", icon: Building2 },
@@ -154,14 +171,17 @@ const modules = [
   },
 ]
 
-interface ERPHeaderProps {
-  activeModule?: string
-}
-
-export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
+export function ERPHeader() {
+  const pathname = usePathname()
   const [hoveredModule, setHoveredModule] = React.useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [mobileExpandedModule, setMobileExpandedModule] = React.useState<string | null>(null)
+
+  // Determine active module from pathname
+  const activeModule = React.useMemo(() => {
+    const found = modules.find((m) => pathname.startsWith(m.href))
+    return found?.id || null
+  }, [pathname])
 
   const activeModuleData = modules.find((m) => m.id === activeModule)
 
@@ -170,17 +190,17 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
       {/* Desktop Navigation */}
       <div className="hidden lg:block">
         {/* Primary Navigation Bar */}
-        <div className="flex h-14 items-center px-4 gap-4">
+        <div className="flex h-14 items-center px-4 gap-4 bg-primary text-primary-foreground">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0 w-[180px]">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-              <Building2 className="h-5 w-5 text-primary-foreground" />
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
+              <Building2 className="h-5 w-5 text-accent-foreground" />
             </div>
-            <span className="font-semibold text-lg">Enterprise</span>
+            <span className="font-semibold text-lg">Nexus ERP</span>
           </Link>
 
           {/* Module Navigation - Horizontal */}
-          <nav className="flex items-center gap-1 flex-1">
+          <nav className="flex items-center gap-1 flex-1 ml-6">
             {modules.map((module) => {
               const isActive = activeModule === module.id
               const isHovered = hoveredModule === module.id
@@ -198,13 +218,13 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                       isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        ? "bg-primary-foreground/15 text-primary-foreground"
+                        : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
                     )}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{module.label}</span>
-                    {module.subItems.length > 0 && (
+                    {module.children.length > 0 && (
                       <ChevronDown
                         className={cn(
                           "h-3 w-3 transition-transform",
@@ -214,22 +234,28 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
                     )}
                   </Link>
 
-                  {/* Horizontal Sub-Navigation Dropdown */}
-                  {module.subItems.length > 0 && isHovered && (
+                  {/* Horizontal Children Dropdown - derived from module.children */}
+                  {module.children.length > 0 && isHovered && (
                     <div className="absolute top-full left-0 mt-1 z-50">
                       <div className="bg-popover border border-border rounded-lg shadow-lg p-2 min-w-max">
-                        {/* Horizontal submenu layout */}
+                        {/* Horizontal submenu - showing children */}
                         <div className="flex items-center gap-1">
-                          {module.subItems.map((subItem) => {
-                            const SubIcon = subItem.icon
+                          {module.children.map((child) => {
+                            const ChildIcon = child.icon
+                            const isChildActive = pathname === child.href
                             return (
                               <Link
-                                key={subItem.href}
-                                href={subItem.href}
-                                className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap"
+                                key={child.href}
+                                href={child.href}
+                                className={cn(
+                                  "flex items-center gap-1.5 px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap",
+                                  isChildActive
+                                    ? "bg-accent text-accent-foreground"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                )}
                               >
-                                <SubIcon className="h-4 w-4" />
-                                <span>{subItem.label}</span>
+                                <ChildIcon className="h-4 w-4" />
+                                <span>{child.label}</span>
                               </Link>
                             )
                           })}
@@ -245,39 +271,45 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
           {/* Right Side Actions */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Global Search */}
-            <Button variant="outline" size="sm" className="w-[200px] justify-start text-muted-foreground">
+            <Button variant="secondary" size="sm" className="w-[180px] justify-start bg-primary-foreground/10 border-0 text-primary-foreground/70 hover:bg-primary-foreground/15 hover:text-primary-foreground">
               <Search className="h-4 w-4 mr-2" />
               <span>Search...</span>
-              <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-1.5 font-mono text-[10px] font-medium text-primary-foreground/70">
                 ⌘K
               </kbd>
             </Button>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 relative">
               <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+              <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-accent text-[10px] text-accent-foreground font-bold">
                 3
-              </Badge>
+              </span>
               <span className="sr-only">Notifications</span>
             </Button>
 
             {/* Quick Create */}
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10">
               <Plus className="h-5 w-5" />
               <span className="sr-only">Create new</span>
             </Button>
 
+            {/* Divider */}
+            <div className="h-6 w-px bg-primary-foreground/20 mx-1" />
+
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 px-2">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="flex items-center gap-2 px-2 text-primary-foreground hover:bg-primary-foreground/10">
+                  <Avatar className="h-8 w-8 border border-primary-foreground/20">
                     <AvatarImage src="/placeholder-user.jpg" alt="User" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback className="bg-accent text-accent-foreground text-xs">JD</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium hidden xl:inline-block">John Doe</span>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="hidden xl:flex flex-col items-start">
+                    <span className="text-sm font-medium">John Doe</span>
+                    <span className="text-[10px] text-primary-foreground/60">Administrator</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-primary-foreground/60" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -303,20 +335,30 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
           </div>
         </div>
 
-        {/* Secondary Navigation - Module Sub-items (Tab Bar) */}
-        {activeModuleData && activeModuleData.subItems.length > 0 && (
-          <div className="border-t border-border bg-muted/30">
-            <div className="flex items-center gap-1 px-4 h-10 overflow-x-auto">
-              {activeModuleData.subItems.map((subItem) => {
-                const SubIcon = subItem.icon
+        {/* Secondary Navigation - Module Children (Horizontal Tab Bar) */}
+        {activeModuleData && activeModuleData.children.length > 0 && (
+          <div className="border-b border-border bg-card">
+            <div className="flex items-center gap-1 px-4 h-11 overflow-x-auto">
+              <div className="flex items-center gap-2 pr-4 mr-4 border-r border-border">
+                {React.createElement(activeModuleData.icon, { className: "h-4 w-4 text-accent" })}
+                <span className="text-sm font-semibold text-foreground whitespace-nowrap">{activeModuleData.label} Module</span>
+              </div>
+              {activeModuleData.children.map((child) => {
+                const ChildIcon = child.icon
+                const isChildActive = pathname === child.href
                 return (
                   <Link
-                    key={subItem.href}
-                    href={subItem.href}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap"
+                    key={child.href}
+                    href={child.href}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                      isChildActive
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
                   >
-                    <SubIcon className="h-4 w-4" />
-                    <span>{subItem.label}</span>
+                    <ChildIcon className="h-4 w-4" />
+                    <span>{child.label}</span>
                   </Link>
                 )
               })}
@@ -326,11 +368,11 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
       </div>
 
       {/* Mobile/Tablet Navigation */}
-      <div className="lg:hidden flex h-14 items-center px-4 gap-4">
+      <div className="lg:hidden flex h-14 items-center px-4 gap-4 bg-primary text-primary-foreground">
         {/* Mobile Menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open menu</span>
             </Button>
@@ -338,20 +380,20 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
           <SheetContent side="left" className="w-[300px] p-0">
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center justify-between p-4 border-b border-border bg-primary text-primary-foreground">
                 <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                    <Building2 className="h-5 w-5 text-primary-foreground" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
+                    <Building2 className="h-5 w-5 text-accent-foreground" />
                   </div>
-                  <span className="font-semibold text-lg">Enterprise</span>
+                  <span className="font-semibold text-lg">Nexus ERP</span>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={() => setMobileOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
 
               {/* Mobile Navigation */}
-              <nav className="flex-1 overflow-y-auto p-4">
+              <nav className="flex-1 overflow-y-auto p-4 bg-background">
                 <div className="flex flex-col gap-1">
                   {modules.map((module) => {
                     const isActive = activeModule === module.id
@@ -367,15 +409,15 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
                           className={cn(
                             "flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
                             isActive
-                              ? "bg-accent text-accent-foreground"
-                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                              ? "bg-accent/10 text-accent"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
                           )}
                         >
                           <div className="flex items-center gap-2">
                             <Icon className="h-5 w-5" />
                             <span>{module.label}</span>
                           </div>
-                          {module.subItems.length > 0 && (
+                          {module.children.length > 0 && (
                             <ChevronDown
                               className={cn(
                                 "h-4 w-4 transition-transform",
@@ -385,20 +427,26 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
                           )}
                         </button>
 
-                        {/* Mobile Sub-items - Vertical */}
-                        {isExpanded && module.subItems.length > 0 && (
-                          <div className="ml-4 mt-1 flex flex-col gap-0.5">
-                            {module.subItems.map((subItem) => {
-                              const SubIcon = subItem.icon
+                        {/* Mobile Children - Vertical list derived from module.children */}
+                        {isExpanded && module.children.length > 0 && (
+                          <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l-2 border-border pl-3">
+                            {module.children.map((child) => {
+                              const ChildIcon = child.icon
+                              const isChildActive = pathname === child.href
                               return (
                                 <Link
-                                  key={subItem.href}
-                                  href={subItem.href}
+                                  key={child.href}
+                                  href={child.href}
                                   onClick={() => setMobileOpen(false)}
-                                  className="flex items-center gap-2 px-3 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                                  className={cn(
+                                    "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors",
+                                    isChildActive
+                                      ? "bg-accent/10 text-accent"
+                                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                  )}
                                 >
-                                  <SubIcon className="h-4 w-4" />
-                                  <span>{subItem.label}</span>
+                                  <ChildIcon className="h-4 w-4" />
+                                  <span>{child.label}</span>
                                 </Link>
                               )
                             })}
@@ -411,11 +459,11 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
               </nav>
 
               {/* Mobile User Section */}
-              <div className="p-4 border-t border-border">
+              <div className="p-4 border-t border-border bg-muted/30">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src="/placeholder-user.jpg" alt="User" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback className="bg-accent text-accent-foreground">JD</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">John Doe</p>
@@ -429,29 +477,25 @@ export function ERPHeader({ activeModule = "sales" }: ERPHeaderProps) {
 
         {/* Logo - Centered on Mobile */}
         <Link href="/" className="flex items-center gap-2 flex-1 justify-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-            <Building2 className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
+            <Building2 className="h-5 w-5 text-accent-foreground" />
           </div>
-          <span className="font-semibold">Enterprise</span>
+          <span className="font-semibold">Nexus ERP</span>
         </Link>
 
         {/* Mobile Right Actions */}
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
             <Search className="h-5 w-5" />
             <span className="sr-only">Search</span>
           </Button>
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 relative">
             <Bell className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px]">
+            <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-accent text-[10px] text-accent-foreground font-bold">
               3
-            </Badge>
+            </span>
             <span className="sr-only">Notifications</span>
           </Button>
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder-user.jpg" alt="User" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
         </div>
       </div>
     </header>
