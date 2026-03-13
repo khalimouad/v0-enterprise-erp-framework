@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { ERPHeader, type ColorTheme } from "@/components/erp-header"
 import { ContactsListView } from "@/components/contacts/contacts-list-view"
 import { ContactPanel } from "@/components/contacts/contact-panel"
 import { ContactEditPanel } from "@/components/contacts/contact-edit-panel"
+import { ContactsFilters } from "@/components/contacts/contacts-filters"
 import type { Contact } from "@/lib/types"
 
 // Sample data - Extended
@@ -203,10 +205,12 @@ const sampleContacts: Contact[] = [
 ]
 
 export default function ContactsPage() {
+  const router = useRouter()
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null)
   const [editingContact, setEditingContact] = React.useState<Contact | null>(null)
   const [contacts, setContacts] = React.useState(sampleContacts)
   const [colorTheme, setColorTheme] = React.useState<ColorTheme>("slate")
+  const [filtersOpen, setFiltersOpen] = React.useState(false)
 
   const handleRowClick = (contact: Contact) => {
     setSelectedContact(contact)
@@ -214,8 +218,8 @@ export default function ContactsPage() {
   }
 
   const handleEdit = (contact: Contact) => {
-    setEditingContact(contact)
-    setSelectedContact(null)
+    // Navigate to full-page edit route instead of opening side panel
+    router.push(`/contacts/${contact.id}/edit`)
   }
 
   const handleClosePanel = () => {
@@ -233,23 +237,20 @@ export default function ContactsPage() {
   }
 
   const handleCreateContact = () => {
-    const newContact: Contact = {
-      id: `c${Date.now()}`,
-      name: "",
-      email: "",
-      phone: "",
-      initials: "NC",
-      type: "customer",
-      createdAt: new Date().toISOString().split("T")[0],
-      status: "prospect",
-    }
-    setEditingContact(newContact)
+    // Navigate to create page
+    router.push("/contacts/create")
   }
 
   return (
     <div className="min-h-screen bg-background">
       <ERPHeader colorTheme={colorTheme} onThemeChange={setColorTheme} />
       <main className="flex h-[calc(100vh-7rem)]">
+        {/* Filters Sidebar */}
+        <ContactsFilters
+          isOpen={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+        />
+
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <ContactsListView
@@ -258,6 +259,7 @@ export default function ContactsPage() {
             onRowClick={handleRowClick}
             onEdit={handleEdit}
             onCreateContact={handleCreateContact}
+            onOpenFilters={() => setFiltersOpen(true)}
             colorTheme={colorTheme}
           />
         </div>
