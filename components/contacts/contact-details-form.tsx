@@ -170,8 +170,8 @@ export function ContactDetailsForm({
             </TabsTrigger>
           </TabsList>
 
-        {/* General Tab */}
-        <TabsContent
+          {/* General Tab */}
+          <TabsContent
           value="general"
           className="flex-1 overflow-y-auto p-6"
         >
@@ -582,6 +582,7 @@ export function ContactDetailsForm({
           </div>
         </TabsContent>
       </Tabs>
+    </div>
 
       {/* Footer with Action Buttons */}
       <div className="border-t-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 px-6 py-4 dark:border-slate-600 dark:from-slate-700 dark:to-slate-800">
