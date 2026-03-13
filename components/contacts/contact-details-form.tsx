@@ -171,10 +171,7 @@ export function ContactDetailsForm({
           </TabsList>
 
           {/* General Tab */}
-          <TabsContent
-          value="general"
-          className="flex-1 overflow-y-auto p-6"
-        >
+          <TabsContent value="general" className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
             <div>
               <h3 className="mb-4 text-lg font-semibold">Classification</h3>
