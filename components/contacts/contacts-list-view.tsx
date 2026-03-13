@@ -338,105 +338,18 @@ export function ContactsListView({
             />
           </div>
 
-          {/* Filters Button */}
-          <Popover open={filterPanelOpen} onOpenChange={setFilterPanelOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn("gap-2", activeFilters.length > 0 && getAccentBgClass())}>
-                <Filter className="h-4 w-4" />
-                Filters
-                {activeFilters.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
-                    {activeFilters.length}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0" align="start">
-              <div className="p-3 border-b border-border">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-sm">Filters</h4>
-                  {activeFilters.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-7 text-xs">
-                      Clear all
-                    </Button>
-                  )}
-                </div>
-              </div>
-              
-              {/* Active Filters */}
-              <div className="p-3 space-y-3 max-h-[300px] overflow-y-auto">
-                {activeFilters.map((filter, index) => {
-                  const field = filterFields.find((f) => f.id === filter.field)
-                  return (
-                    <div key={index} className="flex items-center gap-2">
-                      <Select value={filter.field} onValueChange={(v) => updateFilter(index, { field: v })}>
-                        <SelectTrigger className="w-[120px] h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {filterFields.map((f) => (
-                            <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      
-                      <Select value={filter.operator} onValueChange={(v) => updateFilter(index, { operator: v as ActiveFilter["operator"] })}>
-                        <SelectTrigger className="w-[100px] h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="contains">contains</SelectItem>
-                          <SelectItem value="equals">equals</SelectItem>
-                          <SelectItem value="startsWith">starts with</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      {field?.type === "select" ? (
-                        <Select value={filter.value} onValueChange={(v) => updateFilter(index, { value: v })}>
-                          <SelectTrigger className="flex-1 h-8 text-xs">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options?.map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          value={filter.value}
-                          onChange={(e) => updateFilter(index, { value: e.target.value })}
-                          className="flex-1 h-8 text-xs"
-                          placeholder="Value..."
-                        />
-                      )}
-
-                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => removeFilter(index)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )
-                })}
-
-                {/* Add Filter Button */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-full gap-2">
-                      <Plus className="h-4 w-4" />
-                      Add filter
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[200px]">
-                    {filterFields.map((field) => (
-                      <DropdownMenuItem key={field.id} onClick={() => addFilter(field.id)}>
-                        {field.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </PopoverContent>
-          </Popover>
+          {/* Filters Button - Opens Sidebar */}
+          {onOpenFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={onOpenFilters}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filtres
+            </Button>
+          )}
 
           {/* Columns Button */}
           <DropdownMenu>
@@ -460,20 +373,6 @@ export function ContactsListView({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Filters Button */}
-          {onOpenFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={onOpenFilters}
-              title="Open filters"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filtres
-            </Button>
-          )}
         </div>
 
         {/* View Mode Toggle & Actions */}
@@ -604,7 +503,17 @@ export function ContactsListView({
           )}
         </div>
         <div className="flex items-center gap-4">
-          <span>1-{Math.min(25, filteredContacts.length)} of {filteredContacts.length}</span>
+          <div className="flex items-center gap-2">
+            <span>Items per page:</span>
+            <Input
+              type="number"
+              min="1"
+              value={pageSize}
+              onChange={(e) => setPageSize(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-16 h-8"
+            />
+          </div>
+          <span>1-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}</span>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
               <ChevronLeft className="h-4 w-4" />

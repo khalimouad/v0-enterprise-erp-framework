@@ -245,7 +245,7 @@ export default function ContactsPage() {
     <div className="min-h-screen bg-background">
       <ERPHeader colorTheme={colorTheme} onThemeChange={setColorTheme} />
       <main className="flex h-[calc(100vh-7rem)]">
-        {/* Filters Panel */}
+        {/* Filters Sidebar */}
         <ContactsFilters
           isOpen={filtersOpen}
           onClose={() => setFiltersOpen(false)}
