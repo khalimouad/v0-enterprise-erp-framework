@@ -2,57 +2,57 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, contact, conversationHistory } = await request.json()
+    const { question, context, conversationHistory } = await request.json()
 
-    // Default Ollama endpoint (localhost by default)
+    // Default Ollama endpoint
     const ollamaUrl = process.env.OLLAMA_API_URL || "http://localhost:11434/api/generate"
 
-    // Create context from contact data
-    const contactContext = `
-Contact Information:
-- Name: ${contact.name}
-- Type: ${contact.type || "N/A"}
-- Status: ${contact.status || "N/A"}
-- Email: ${contact.email}
-- Phone: ${contact.phone}
-- Address: ${contact.address || "N/A"}, ${contact.city || ""}, ${contact.country || ""}
-- Industry: ${contact.industry || "N/A"}
-- Website: ${contact.website || "N/A"}
-- Currency: ${contact.currency || "USD"}
-- Payment Terms: ${contact.paymentTerms || "N/A"}
-- Customer Rank: ${contact.customerRank || "N/A"}
-- Supplier Rank: ${contact.supplierRank || "N/A"}
-- Tags: ${contact.tags?.join(", ") || "N/A"}
+    // Build efficient, minimal context (only essential fields)
+    const buildContext = () => {
+      const fields = []
+      
+      if (context?.contactName) fields.push(`Contact: ${context.contactName}`)
+      if (context?.type) fields.push(`Type: ${context.type}`)
+      if (context?.status) fields.push(`Statut: ${context.status}`)
+      if (context?.tags?.length) fields.push(`Étiquettes: ${context.tags.join(", ")}`)
+      
+      return fields.join(" | ")
+    }
 
-You are a helpful business assistant for an ERP system. Answer questions about this contact and provide insights based on the information provided. Be professional and concise.
-`
+    const minimalContext = buildContext()
 
-    // Build conversation context from history
-    let conversationContext = contactContext + "\n\nPrevious conversation:"
+    // Build short prompt (tokens-optimized)
+    let systemPrompt = `Tu es un assistant ERP. ${minimalContext}`
+    
+    // Add recent conversation context only (last 3 messages max)
+    let conversationContext = ""
     if (conversationHistory && conversationHistory.length > 0) {
-      conversationHistory.forEach((msg: any) => {
-        conversationContext += `\n${msg.type === "user" ? "User" : "Assistant"}: ${msg.content}`
+      const recent = conversationHistory.slice(-3)
+      recent.forEach((msg: any) => {
+        const role = msg.type === "user" ? "Utilisateur" : "IA"
+        conversationContext += `\n${role}: ${msg.content}`
       })
     }
 
-    const prompt = `${conversationContext}\n\nUser: ${message}\n\nAssistant:`
+    // Final optimized prompt
+    const prompt = `${systemPrompt}${conversationContext}\n\nUtilisateur: ${question}\n\nIA (réponse courte):`
 
-    // Call Ollama API with streaming
+    console.log("[v0] Ollama prompt length:", prompt.length)
+
     let fullResponse = ""
 
     try {
       const ollamaResponse = await fetch(ollamaUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: process.env.OLLAMA_MODEL || "llama2",
+          model: process.env.OLLAMA_MODEL || "mistral",
           prompt: prompt,
           stream: false,
-          temperature: 0.7,
-          top_k: 40,
-          top_p: 0.9,
+          temperature: 0.6,
+          top_k: 30,
+          top_p: 0.85,
+          num_predict: 200, // Limit response length
         }),
       })
 
@@ -61,12 +61,11 @@ You are a helpful business assistant for an ERP system. Answer questions about t
       }
 
       const data = await ollamaResponse.json()
-      fullResponse = data.response || "I apologize, but I couldn't generate a response."
+      fullResponse = data.response || "Désolé, je n'ai pas pu générer de réponse."
     } catch (ollamaError) {
       console.error("[v0] Ollama connection error:", ollamaError)
-      // Return a helpful message if Ollama is not available
       fullResponse =
-        "I'm unable to connect to the AI service. Please make sure Ollama is running locally (typically on http://localhost:11434). You can start it with: `ollama serve`\n\nFor now, I can still help you with manual analysis of the contact information."
+        "Je ne peux pas me connecter au service IA. Assurez-vous qu'Ollama est en cours d'exécution localement (http://localhost:11434). Démarrez-le avec: `ollama serve`"
     }
 
     return NextResponse.json({
@@ -77,7 +76,7 @@ You are a helpful business assistant for an ERP system. Answer questions about t
     console.error("[v0] Chat API error:", error)
     return NextResponse.json(
       {
-        error: "Failed to process chat message",
+        error: "Erreur lors du traitement du message",
         success: false,
       },
       { status: 500 }

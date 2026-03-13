@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ContactDetailsForm } from "./contact-details-form"
 import { ContactChangeLog } from "./contact-changelog"
 import { ContactAIChat } from "./contact-ai-chat"
+import { ContactAISuggestions } from "./contact-ai-suggestions"
 import type { Contact } from "@/lib/types"
 
 interface ContactEditFullPageProps {
@@ -36,9 +37,13 @@ export function ContactEditFullPage({ contact, isCreating }: ContactEditFullPage
         />
       </div>
 
-      {/* Right Panel - 1/3: Changelog & AI Chat */}
-      <div className="col-span-1 flex flex-col overflow-hidden lg:col-span-1">
-        <Tabs defaultValue="changelog" className="flex flex-col overflow-hidden rounded-lg border-2 border-blue-400 bg-white shadow-md dark:border-blue-600 dark:bg-slate-800">
+      {/* Right Panel - 1/3: AI Suggestions, Changelog & Chat */}
+      <div className="col-span-1 flex flex-col gap-4 overflow-hidden lg:col-span-1">
+        {/* AI Suggestions at Top */}
+        <ContactAISuggestions contact={editedContact} />
+
+        {/* Tabs: Changelog & Chat */}
+        <Tabs defaultValue="changelog" className="flex flex-col overflow-hidden rounded-lg border-2 border-blue-400 bg-white shadow-md dark:border-blue-600 dark:bg-slate-800 flex-1">
           <TabsList className="grid w-full grid-cols-2 gap-0 border-b-2 border-blue-200 bg-gradient-to-r from-blue-50 to-slate-50 p-1 dark:border-blue-700 dark:from-blue-900 dark:to-slate-700">
             <TabsTrigger value="changelog" className="text-xs font-semibold md:text-sm">
               Historique
