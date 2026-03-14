@@ -327,12 +327,37 @@ export function ContactsListView({
       {/* Toolbar - All controls on one line */}
       <div className="p-3 md:p-4 border-b border-border">
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          {/* Normal Search Input */}
+          <div className="relative w-48 md:w-56">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+
+          {/* Filters Button - Opens Sidebar */}
+          {onOpenFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={onOpenFilters}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs md:text-sm">Filters</span>
+            </Button>
+          )}
+
           {/* Columns Button */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 text-xs md:text-sm">
+              <Button variant="outline" size="sm" className="gap-2 text-xs md:text-sm h-8">
                 <Columns className="h-4 w-4" />
-                Columns
+                <span className="hidden sm:inline">Columns</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[200px]">
@@ -357,6 +382,7 @@ export function ContactsListView({
               size="sm"
               className={cn("h-7 px-2", viewMode === "table" && getAccentBgClass())}
               onClick={() => setViewMode("table")}
+              title="Table view"
             >
               <List className={cn("h-4 w-4", viewMode === "table" && getAccentTextClass())} />
             </Button>
@@ -365,6 +391,7 @@ export function ContactsListView({
               size="sm"
               className={cn("h-7 px-2", viewMode === "cards" && getAccentBgClass())}
               onClick={() => setViewMode("cards")}
+              title="Cards view"
             >
               <LayoutGrid className={cn("h-4 w-4", viewMode === "cards" && getAccentTextClass())} />
             </Button>
@@ -373,47 +400,25 @@ export function ContactsListView({
               size="sm"
               className={cn("h-7 px-2", viewMode === "kanban" && getAccentBgClass())}
               onClick={() => setViewMode("kanban")}
+              title="Kanban view"
             >
               <Kanban className={cn("h-4 w-4", viewMode === "kanban" && getAccentTextClass())} />
             </Button>
           </div>
 
-          <Button variant="outline" size="icon" className="h-8 w-8">
-            <Download className="h-4 w-4" />
-          </Button>
-
-          <Button size="sm" className={cn("gap-2", getAccentClass())} onClick={onCreateContact}>
-            <Plus className="h-4 w-4" />
-            Create Contact
-          </Button>
-
-          {/* Spacer to push search and filters to the right */}
+          {/* Spacer to push create and download to the right */}
           <div className="flex-1" />
 
-          {/* Normal Search Input */}
-          <div className="relative w-48 md:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 text-sm"
-            />
-          </div>
+          {/* Create Contact Button */}
+          <Button size="sm" className={cn("gap-2 h-8", getAccentClass())} onClick={onCreateContact}>
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create Contact</span>
+          </Button>
 
-          {/* Filters Button - Opens Sidebar */}
-          {onOpenFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={onOpenFilters}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">Filtres</span>
-            </Button>
-          )}
+          {/* Download/Quick Action Button */}
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" title="Download">
+            <Download className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
