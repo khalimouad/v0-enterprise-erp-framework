@@ -29,6 +29,9 @@ import {
   Calendar,
   Tag,
   MapPin,
+  Archive,
+  FileText,
+  Printer,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -465,6 +468,97 @@ export function ContactsListView({
           </button>
         ))}
       </div>
+
+      {/* Quick Actions Bar - Shown when contacts are selected */}
+      {selectedRows.size > 0 && (
+        <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground">
+            {selectedRows.size} contact{selectedRows.size > 1 ? "s" : ""} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Export as CSV"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                exportToCSV(selected)
+              }}
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">CSV</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Export as PDF"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                exportToPDF(selected)
+              }}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">PDF</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Print"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                printContacts(selected)
+              }}
+            >
+              <Printer className="h-4 w-4" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
+            <div className="w-px h-6 bg-border" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Archive"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                archiveContacts(selected)
+                setSelectedRows(new Set())
+              }}
+            >
+              <Archive className="h-4 w-4" />
+              <span className="hidden sm:inline">Archive</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+              title="Delete"
+              onClick={() => {
+                if (confirm(`Are you sure you want to delete ${selectedRows.size} contact${selectedRows.size > 1 ? "s" : ""}?`)) {
+                  const selected = Array.from(selectedRows).map(id => 
+                    filteredContacts.find(c => c.id === id)
+                  ).filter(Boolean) as Contact[]
+                  deleteContacts(selected)
+                  setSelectedRows(new Set())
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Content Area */}
       <div className="flex-1 overflow-auto">

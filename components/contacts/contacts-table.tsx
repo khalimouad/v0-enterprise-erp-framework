@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, Filter, Columns, Download, Plus, MoreVertical, ChevronLeft, ChevronRight, Edit, Trash2, Copy, Mail, Phone, Star } from "lucide-react"
+import { Search, Filter, Columns, Download, Plus, MoreVertical, ChevronLeft, ChevronRight, Edit, Trash2, Copy, Mail, Phone, Star, Archive, FileText, Printer, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -79,8 +79,154 @@ export function ContactsTable({
     }
   }
 
+  // Bulk action handlers
+  const handleBulkDelete = () => {
+    console.log("[v0] Delete selected contacts:", Array.from(selectedRows))
+    // TODO: Implement delete action
+    setSelectedRows(new Set())
+  }
+
+  const handleBulkArchive = () => {
+    console.log("[v0] Archive selected contacts:", Array.from(selectedRows))
+    // TODO: Implement archive action
+    setSelectedRows(new Set())
+  }
+
+  const handleExportCSV = () => {
+    const selectedContacts = filteredContacts.filter((c) => selectedRows.has(c.id))
+    const csv = [
+      ["Name", "Email", "Phone", "Location", "Type", "Tags"],
+      ...selectedContacts.map((c) => [
+        c.name,
+        c.email,
+        c.phone,
+        `${c.city || ""}, ${c.country || ""}`.trim(),
+        c.type || "",
+        c.tags?.join("; ") || "",
+      ]),
+    ]
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n")
+
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "contacts.csv"
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  const handleExportPDF = () => {
+    console.log("[v0] Export PDF for selected contacts:", Array.from(selectedRows))
+    // TODO: Implement PDF export
+  }
+
+  const handlePrint = () => {
+    const selectedContacts = filteredContacts.filter((c) => selectedRows.has(c.id))
+    const printContent = selectedContacts
+      .map(
+        (c) =>
+          `<div style="page-break-inside: avoid; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc;">
+        <strong>${c.name}</strong><br/>
+        Email: ${c.email}<br/>
+        Phone: ${c.phone}<br/>
+        Location: ${c.city || ""}, ${c.country || ""}<br/>
+        Type: ${c.type || ""}<br/>
+        Tags: ${c.tags?.join(", ") || ""}<br/>
+      </div>`
+      )
+      .join("")
+
+    const printWindow = window.open("", "", "width=800,height=600")
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Contacts</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              @media print { body { margin: 0; } }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.print()
+    }
+  }
+
   return (
     <div className="flex flex-col h-full bg-card">
+      {/* Bulk Actions Toolbar */}
+      {selectedRows.size > 0 && (
+        <div className="px-4 py-3 border-b border-border bg-blue-50 dark:bg-blue-950 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-foreground">
+              {selectedRows.size} selected
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedRows(new Set())}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handleExportCSV}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">CSV</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handleExportPDF}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">PDF</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handlePrint}
+            >
+              <Printer className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Print</span>
+            </Button>
+            <div className="border-l border-border pl-2" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handleBulkArchive}
+            >
+              <Archive className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Archive</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-destructive hover:text-destructive"
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Delete</span>
+            </Button>
+          </div>
+        </div>
+      )}
       {/* Table Header / Actions */}
       <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 min-w-[300px]">
