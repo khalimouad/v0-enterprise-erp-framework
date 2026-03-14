@@ -328,7 +328,7 @@ export function ContactsListView({
       <div className="p-3 md:p-4 border-b border-border">
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {/* Normal Search Input */}
-          <div className="relative w-48 md:w-56">
+          <div className="relative w-96 md:max-w-xl">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
