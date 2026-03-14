@@ -454,17 +454,21 @@ export function ContactsListView({
         </div>
       )}
 
-      {/* Type Tabs */}
-      <div className="flex px-4 py-2 gap-1 border-b border-border overflow-x-auto">
+      {/* Type Tabs - Distinct visual design */}
+      <div className="px-4 pt-3 pb-0 flex gap-2 overflow-x-auto">
         {typeTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setTypeFilter(tab.id)}
             className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+              "px-4 py-2.5 text-sm font-semibold rounded-t-lg transition-all whitespace-nowrap border-b-2",
               typeFilter === tab.id
-                ? cn(getAccentBgClass(), getAccentTextClass())
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? cn(
+                    "border-b-2 text-white shadow-md",
+                    getAccentBgClass(),
+                    "border-transparent"
+                  )
+                : "bg-slate-100 dark:bg-slate-700 text-muted-foreground border-b-2 border-transparent hover:bg-slate-200 dark:hover:bg-slate-600"
             )}
           >
             {tab.label}
