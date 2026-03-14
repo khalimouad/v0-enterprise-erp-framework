@@ -187,13 +187,24 @@ export function ContactDetailsForm({
           </TabsList>
 
           {/* General Tab */}
-          <TabsContent value="general" className="flex-1 overflow-y-auto p-6 min-h-96">
-          <div className="space-y-6">
+          <TabsContent value="general" className="flex-1 overflow-y-auto min-h-96">
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-8 space-y-8">
+            
+            {/* Header Section */}
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Classification</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <Label htmlFor="customerRank" className="text-sm font-medium">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Informations Générales</h2>
+              <p className="text-sm text-muted-foreground">Gérez les informations principales de ce contact</p>
+            </div>
+
+            {/* Classification Section */}
+            <div className="bg-white dark:bg-slate-700 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-600">
+              <h3 className="text-base font-bold text-foreground mb-6 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Classification
+              </h3>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="customerRank" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                     Classement Client
                   </Label>
                   <Select
@@ -202,7 +213,7 @@ export function ContactDetailsForm({
                       handleChange("customerRank", parseInt(value))
                     }
                   >
-                    <SelectTrigger className="mt-1 bg-slate-50 dark:bg-slate-700">
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -214,8 +225,8 @@ export function ContactDetailsForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="supplierRank" className="text-sm font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="supplierRank" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                     Classement Fournisseur
                   </Label>
                   <Select
@@ -224,7 +235,7 @@ export function ContactDetailsForm({
                       handleChange("supplierRank", parseInt(value))
                     }
                   >
-                    <SelectTrigger className="mt-1 bg-slate-50 dark:bg-slate-700">
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -236,16 +247,110 @@ export function ContactDetailsForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="industry" className="text-sm font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="industry" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                     Secteur d'Activité
                   </Label>
-                  <Input
-                    id="industry"
+                  <Select
                     value={contact.industry || ""}
-                    onChange={(e) => handleChange("industry", e.target.value)}
-                    placeholder="Secteur industriel"
-                    className="mt-1 bg-slate-50 dark:bg-slate-700"
+                    onValueChange={(value) => handleChange("industry", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="technology">Technologie</SelectItem>
+                      <SelectItem value="finance">Finance</SelectItem>
+                      <SelectItem value="retail">Vente au Détail</SelectItem>
+                      <SelectItem value="healthcare">Santé</SelectItem>
+                      <SelectItem value="manufacturing">Fabrication</SelectItem>
+                      <SelectItem value="services">Services</SelectItem>
+                      <SelectItem value="other">Autre</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Location Section */}
+            <div className="bg-white dark:bg-slate-700 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-600">
+              <h3 className="text-base font-bold text-foreground mb-6 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                Localisation
+              </h3>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <Label htmlFor="region" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Région
+                  </Label>
+                  <Select
+                    value={contact.region || ""}
+                    onValueChange={(value) => handleChange("region", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="souss-massa">Souss-Massa</SelectItem>
+                      <SelectItem value="marrakech">Marrakech-Safi</SelectItem>
+                      <SelectItem value="casablanca">Casablanca-Settat</SelectItem>
+                      <SelectItem value="fes">Fès-Meknès</SelectItem>
+                      <SelectItem value="tangier">Tanger-Tétouan</SelectItem>
+                      <SelectItem value="rabat">Rabat-Salé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Ville
+                  </Label>
+                  <Select
+                    value={contact.city || ""}
+                    onValueChange={(value) => handleChange("city", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="agadir">Agadir</SelectItem>
+                      <SelectItem value="marrakech">Marrakech</SelectItem>
+                      <SelectItem value="casablanca">Casablanca</SelectItem>
+                      <SelectItem value="fes">Fès</SelectItem>
+                      <SelectItem value="tangier">Tanger</SelectItem>
+                      <SelectItem value="rabat">Rabat</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Pays
+                  </Label>
+                  <Select
+                    value={contact.country || ""}
+                    onValueChange={(value) => handleChange("country", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="maroc">Maroc</SelectItem>
+                      <SelectItem value="algerie">Algérie</SelectItem>
+                      <SelectItem value="tunisie">Tunisie</SelectItem>
+                      <SelectItem value="france">France</SelectItem>
+                      <SelectItem value="espagne">Espagne</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Code Postal
+                  </Label>
+                  <Input
+                    id="postalCode"
+                    value={contact.postalCode || ""}
+                    onChange={(e) => handleChange("postalCode", e.target.value)}
+                    placeholder="XXXXX"
+                    className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10"
                   />
                 </div>
               </div>
