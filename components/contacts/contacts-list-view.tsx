@@ -695,26 +695,6 @@ export function ContactsListView({
             </Button>
           </div>
         </div>
-          ) : (
-            <button
-              onClick={() => {
-                setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
-                setEditingPageRange(true)
-              }}
-              className="px-3 py-1.5 rounded-lg border border-border hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all cursor-pointer font-semibold text-foreground"
-            >
-              {Math.max(1, 1)}-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
-            </button>
-          )}
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
       </footer>
     </div>
   )
