@@ -260,7 +260,7 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
   const theme = getThemeClasses()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
+    <header suppressHydrationWarning className="sticky top-0 z-50 w-full border-b border-border bg-background">
       {/* Desktop Navigation */}
       <div className="hidden lg:block">
         {/* Primary Navigation Bar - NO hover dropdown, only click navigates */}
