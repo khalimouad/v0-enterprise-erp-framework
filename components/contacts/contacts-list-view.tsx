@@ -616,17 +616,17 @@ export function ContactsListView({
           </div>
           <button
             onClick={() => {
-              const newPageSize = prompt("Enter page size (e.g., 10, 25, 50):", pageSize.toString())
-              if (newPageSize) {
-                const size = parseInt(newPageSize)
+              const newRange = prompt("Enter items per page (e.g., 10, 25, 50):", pageSize.toString())
+              if (newRange) {
+                const size = parseInt(newRange)
                 if (size > 0) {
                   setPageSize(size)
                 }
               }
             }}
-            className="px-3 py-1 rounded-md hover:bg-muted transition-colors cursor-pointer font-medium text-foreground border border-transparent hover:border-border"
+            className="px-3 py-1.5 rounded-lg border border-border hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all cursor-pointer font-semibold text-foreground"
           >
-            1-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
+            {Math.max(1, 1)}-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
           </button>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
