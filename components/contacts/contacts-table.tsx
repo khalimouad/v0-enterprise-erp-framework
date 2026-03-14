@@ -413,35 +413,18 @@ export function ContactsTable({
         </div>
         <div className="flex items-center gap-4">
           {editingPageRange ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
+              <span className="text-xs font-semibold text-foreground">Items per page:</span>
               <Input
                 type="text"
                 value={pageRangeInput}
                 onChange={(e) => setPageRangeInput(e.target.value)}
                 placeholder="1-25"
-                className="h-8 w-24 text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    // Parse the input like "1-25" or "1-100"
-                    const match = pageRangeInput.match(/(\d+)-(\d+)/)
-                    if (match) {
-                      const start = parseInt(match[1])
-                      const end = parseInt(match[2])
-                      const newPageSize = end - start + 1
-                      setPageSize(newPageSize)
-                      setCurrentPage(1)
-                    }
-                    setEditingPageRange(false)
-                  } else if (e.key === "Escape") {
-                    setEditingPageRange(false)
-                  }
-                }}
-                autoFocus
+                className="h-8 w-32 text-sm font-semibold border-blue-300 focus:border-blue-500"
               />
               <Button
                 size="sm"
-                variant="outline"
-                className="h-8 px-2"
+                className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => {
                   const match = pageRangeInput.match(/(\d+)-(\d+)/)
                   if (match) {
@@ -454,18 +437,19 @@ export function ContactsTable({
                   setEditingPageRange(false)
                 }}
               >
-                OK
+                Apply
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 px-2"
+                className="h-8 px-3"
                 onClick={() => {
                   setEditingPageRange(false)
                 }}
               >
                 Cancel
               </Button>
+              <span className="text-xs text-muted-foreground ml-2">Format: start-end (e.g., 1-50)</span>
             </div>
           ) : (
             <button
@@ -475,7 +459,7 @@ export function ContactsTable({
                 setPageRangeInput(`${start}-${end}`)
                 setEditingPageRange(true)
               }}
-              className="hover:text-foreground transition-colors cursor-pointer font-semibold"
+              className="px-3 py-2 rounded-lg hover:bg-muted transition-colors cursor-pointer font-semibold text-foreground border border-transparent hover:border-border"
             >
               {Math.max(1, (currentPage - 1) * pageSize + 1)}-{Math.min(currentPage * pageSize, filteredContacts.length)} of {filteredContacts.length}
             </button>
