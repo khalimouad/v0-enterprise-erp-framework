@@ -165,23 +165,23 @@ export function ContactDetailsForm({
       {/* Tabs Section */}
       <div className="flex-1 overflow-hidden">
         <Tabs defaultValue="general" className="flex h-full flex-col">
-          <TabsList className="grid w-full grid-cols-6 gap-0 border-b-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 dark:border-slate-600 dark:from-slate-700 dark:to-slate-600">
-            <TabsTrigger value="general" className="text-xs font-semibold md:text-sm">
+          <TabsList className="grid w-full grid-cols-6 gap-3 border-0 bg-slate-50 dark:bg-slate-800 px-4 py-4 rounded-none">
+            <TabsTrigger value="general" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Général
             </TabsTrigger>
-            <TabsTrigger value="contact" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="contact" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Contact
             </TabsTrigger>
-            <TabsTrigger value="address" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="address" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Adresse
             </TabsTrigger>
-            <TabsTrigger value="tax" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="tax" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Fiscal
             </TabsTrigger>
-            <TabsTrigger value="company" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="company" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Entreprise
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="contacts" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Contacts
             </TabsTrigger>
           </TabsList>
