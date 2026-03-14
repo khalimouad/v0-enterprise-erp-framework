@@ -614,7 +614,20 @@ export function ContactsListView({
               className="w-16 h-8"
             />
           </div>
-          <span>1-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}</span>
+          <button
+            onClick={() => {
+              const newPageSize = prompt("Enter page size (e.g., 10, 25, 50):", pageSize.toString())
+              if (newPageSize) {
+                const size = parseInt(newPageSize)
+                if (size > 0) {
+                  setPageSize(size)
+                }
+              }
+            }}
+            className="px-3 py-1 rounded-md hover:bg-muted transition-colors cursor-pointer font-medium text-foreground border border-transparent hover:border-border"
+          >
+            1-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
+          </button>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
               <ChevronLeft className="h-4 w-4" />
