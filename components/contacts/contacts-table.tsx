@@ -44,6 +44,10 @@ export function ContactsTable({
 }: ContactsTableProps) {
   const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [pageSize, setPageSize] = React.useState(25)
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [editingPageRange, setEditingPageRange] = React.useState(false)
+  const [pageRangeInput, setPageRangeInput] = React.useState(`1-${Math.min(25, contacts.length)}`)
 
   const filteredContacts = React.useMemo(() => {
     if (!searchQuery) return contacts
@@ -408,12 +412,89 @@ export function ContactsTable({
           Total: <span className="font-semibold text-foreground">{totalContacts.toLocaleString()} contacts</span>
         </div>
         <div className="flex items-center gap-4">
-          <span>1-{Math.min(25, filteredContacts.length)} of {filteredContacts.length}</span>
+          {editingPageRange ? (
+            <div className="flex items-center gap-2">
+              <Input
+                type="text"
+                value={pageRangeInput}
+                onChange={(e) => setPageRangeInput(e.target.value)}
+                placeholder="1-25"
+                className="h-8 w-24 text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    // Parse the input like "1-25" or "1-100"
+                    const match = pageRangeInput.match(/(\d+)-(\d+)/)
+                    if (match) {
+                      const start = parseInt(match[1])
+                      const end = parseInt(match[2])
+                      setPageSize(end - start + 1)
+                      setCurrentPage(Math.ceil(start / (end - start + 1)))
+                    }
+                    setEditingPageRange(false)
+                  } else if (e.key === "Escape") {
+                    setEditingPageRange(false)
+                    setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
+                  }
+                }}
+                autoFocus
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-2"
+                onClick={() => {
+                  const match = pageRangeInput.match(/(\d+)-(\d+)/)
+                  if (match) {
+                    const start = parseInt(match[1])
+                    const end = parseInt(match[2])
+                    setPageSize(end - start + 1)
+                    setCurrentPage(Math.ceil(start / (end - start + 1)))
+                  }
+                  setEditingPageRange(false)
+                }}
+              >
+                OK
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-2"
+                onClick={() => {
+                  setEditingPageRange(false)
+                  setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setEditingPageRange(true)
+                setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
+              }}
+              className="hover:text-foreground transition-colors cursor-pointer font-semibold"
+            >
+              1-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
+            </button>
+          )}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage * pageSize >= filteredContacts.length}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
