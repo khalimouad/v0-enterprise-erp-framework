@@ -167,7 +167,10 @@ export function ContactsListView({
   const [activeFilters, setActiveFilters] = React.useState<ActiveFilter[]>([])
   const [filterPanelOpen, setFilterPanelOpen] = React.useState(false)
   const [typeFilter, setTypeFilter] = React.useState<string>("all")
-  const [pageSize, setPageSize] = React.useState(25)
+  const [pageSize, setPageSize] = React.useState(10)
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [editingPageRange, setEditingPageRange] = React.useState(false)
+  const [pageRangeInput, setPageRangeInput] = React.useState("1-10")
 
   // Apply filters
   const filteredContacts = React.useMemo(() => {
@@ -605,13 +608,14 @@ export function ContactsListView({
         </div>
         <div className="flex items-center gap-4">
           {editingPageRange ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
+              <label className="text-xs font-semibold text-foreground">Range:</label>
               <Input
                 type="text"
                 value={pageRangeInput}
                 onChange={(e) => setPageRangeInput(e.target.value)}
                 placeholder="1-10"
-                className="w-24 h-8 text-sm font-semibold border-blue-300"
+                className="w-20 h-8 text-sm font-semibold border-blue-300"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -619,7 +623,7 @@ export function ContactsListView({
                     if (match) {
                       const start = parseInt(match[1])
                       const end = parseInt(match[2])
-                      if (start > 0 && end > start && end <= filteredContacts.length) {
+                      if (start > 0 && end >= start && end <= filteredContacts.length) {
                         setPageSize(end - start + 1)
                         setCurrentPage(1)
                       }
@@ -632,13 +636,13 @@ export function ContactsListView({
               />
               <Button
                 size="sm"
-                className="h-8 px-2 bg-blue-600 hover:bg-blue-700 text-white"
+                className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => {
                   const match = pageRangeInput.match(/(\d+)-(\d+)/)
                   if (match) {
                     const start = parseInt(match[1])
                     const end = parseInt(match[2])
-                    if (start > 0 && end > start && end <= filteredContacts.length) {
+                    if (start > 0 && end >= start && end <= filteredContacts.length) {
                       setPageSize(end - start + 1)
                       setCurrentPage(1)
                     }
@@ -646,17 +650,51 @@ export function ContactsListView({
                   setEditingPageRange(false)
                 }}
               >
-                OK
+                Save
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 px-2"
+                className="h-8 px-3"
                 onClick={() => setEditingPageRange(false)}
               >
                 Cancel
               </Button>
             </div>
+          ) : (
+            <button
+              onClick={() => {
+                const start = (currentPage - 1) * pageSize + 1
+                const end = Math.min(currentPage * pageSize, filteredContacts.length)
+                setPageRangeInput(`${start}-${end}`)
+                setEditingPageRange(true)
+              }}
+              className="px-4 py-2 rounded-lg border border-border hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all cursor-pointer font-semibold text-foreground"
+            >
+              {Math.max(1, (currentPage - 1) * pageSize + 1)}-{Math.min(currentPage * pageSize, filteredContacts.length)} of {filteredContacts.length}
+            </button>
+          )}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage * pageSize >= filteredContacts.length}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
           ) : (
             <button
               onClick={() => {
