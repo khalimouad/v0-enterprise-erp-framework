@@ -743,75 +743,23 @@ export function ContactDetailsForm({
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Add New Contact Form */}
-            <div className="mt-6 rounded-lg border-2 border-blue-300 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900">
-              <h4 className="mb-4 font-semibold">Ajouter une Personne de Contact</h4>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="newContactName" className="text-sm font-medium">
-                    Nom
-                  </Label>
-                  <Input
-                    id="newContactName"
-                    value={newContact.name}
-                    onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                    placeholder="Nom et Prénom"
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newContactFunction" className="text-sm font-medium">
-                    Fonction
-                  </Label>
-                  <Input
-                    id="newContactFunction"
-                    value={newContact.function}
-                    onChange={(e) => setNewContact({ ...newContact, function: e.target.value })}
-                    placeholder="Directeur, Responsable, etc."
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newContactEmail" className="text-sm font-medium">
-                    Email
-                  </Label>
-                  <Input
-                    id="newContactEmail"
-                    type="email"
-                    value={newContact.email}
-                    onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
-                    placeholder="email@example.com"
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newContactPhone" className="text-sm font-medium">
-                    Téléphone
-                  </Label>
-                  <Input
-                    id="newContactPhone"
-                    value={newContact.phone}
-                    onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
-                    placeholder="+212 XXX XX XX XX"
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
-              </div>
-              <Button
-                className="mt-4 gap-2 bg-blue-600 hover:bg-blue-700"
-                onClick={() => {
-                  if (newContact.name.trim()) {
-                    const updatedContacts = [...(contact.contacts || []), { ...newContact }]
+              {/* Add Row Button in Table Footer */}
+              <div className="border-t-2 border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-600 dark:bg-slate-700">
+                <Button
+                  size="sm"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => {
+                    const updatedContacts = [...(contact.contacts || []), { name: "", function: "", email: "", phone: "" }]
                     handleChange("contacts", updatedContacts)
-                    setNewContact({ name: "", function: "", email: "", phone: "" })
-                  }
-                }}
-              >
-                <Plus className="h-4 w-4" />
-                Ajouter
-              </Button>
+                    // Auto-open edit mode for the new row
+                    setEditingRowIndex(updatedContacts.length - 1)
+                    setEditValues({ name: "", function: "", email: "", phone: "" })
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Ajouter une Personne de Contact
+                </Button>
+              </div>
             </div>
           </div>
         </TabsContent>

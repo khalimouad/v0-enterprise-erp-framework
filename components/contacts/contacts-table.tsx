@@ -48,6 +48,9 @@ export function ContactsTable({
   const [currentPage, setCurrentPage] = React.useState(1)
   const [editingPageRange, setEditingPageRange] = React.useState(false)
   const [pageRangeInput, setPageRangeInput] = React.useState(`1-${Math.min(25, contacts.length)}`)
+  const [editingRowId, setEditingRowId] = React.useState<string | null>(null)
+  const [editValues, setEditValues] = React.useState<Partial<Contact>>({})
+
 
   const filteredContacts = React.useMemo(() => {
     if (!searchQuery) return contacts
@@ -326,22 +329,73 @@ export function ContactsTable({
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-                        {contact.initials}
+                    {editingRowId === contact.id ? (
+                      <Input
+                        type="text"
+                        value={editValues.name || ""}
+                        onChange={(e) => setEditValues({ ...editValues, name: e.target.value })}
+                        className="h-8"
+                        autoFocus
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                          {contact.initials}
+                        </div>
+                        <div>
+                          <span className={cn("font-semibold", isSelected && "text-accent")}>{contact.name}</span>
+                          {(contact.customerRank ?? 0) >= 4 && (
+                            <Star className="inline h-3 w-3 ml-1 text-amber-500 fill-amber-500" />
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <span className={cn("font-semibold", isSelected && "text-accent")}>{contact.name}</span>
-                        {(contact.customerRank ?? 0) >= 4 && (
-                          <Star className="inline h-3 w-3 ml-1 text-amber-500 fill-amber-500" />
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{contact.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{contact.phone}</td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {contact.city && contact.country ? `${contact.city}, ${contact.country}` : contact.country || "-"}
+                    {editingRowId === contact.id ? (
+                      <Input
+                        type="email"
+                        value={editValues.email || ""}
+                        onChange={(e) => setEditValues({ ...editValues, email: e.target.value })}
+                        className="h-8"
+                      />
+                    ) : (
+                      contact.email
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {editingRowId === contact.id ? (
+                      <Input
+                        type="tel"
+                        value={editValues.phone || ""}
+                        onChange={(e) => setEditValues({ ...editValues, phone: e.target.value })}
+                        className="h-8"
+                      />
+                    ) : (
+                      contact.phone
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {editingRowId === contact.id ? (
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={editValues.city || ""}
+                          onChange={(e) => setEditValues({ ...editValues, city: e.target.value })}
+                          placeholder="City"
+                          className="h-8 flex-1"
+                        />
+                        <Input
+                          type="text"
+                          value={editValues.country || ""}
+                          onChange={(e) => setEditValues({ ...editValues, country: e.target.value })}
+                          placeholder="Country"
+                          className="h-8 flex-1"
+                        />
+                      </div>
+                    ) : (
+                      contact.city && contact.country ? `${contact.city}, ${contact.country}` : contact.country || "-"
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {typeCfg && (
@@ -368,26 +422,69 @@ export function ContactsTable({
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                    {editingRowId === contact.id ? (
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            // TODO: Save the changes
+                            console.log("[v0] Saving contact changes:", editValues)
+                            setEditingRowId(null)
+                          }}
+                        >
+                          <Check className="h-4 w-4 text-green-500" />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(contact); }}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                          <Mail className="mr-2 h-4 w-4" />
-                          Send Email
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                          <Phone className="mr-2 h-4 w-4" />
-                          Call
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingRowId(null)
+                            setEditValues({})
+                          }}
+                        >
+                          <X className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingRowId(contact.id)
+                              setEditValues(contact)
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Inline
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(contact); }}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Full Form
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Send Email
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                            <Phone className="mr-2 h-4 w-4" />
+                            Call
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </td>
                           <Copy className="mr-2 h-4 w-4" />
                           Duplicate
                         </DropdownMenuItem>
