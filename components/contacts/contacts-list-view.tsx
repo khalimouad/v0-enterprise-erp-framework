@@ -1022,3 +1022,140 @@ function KanbanView({
     </div>
   )
 }
+
+// Helper functions for quick actions
+function exportToCSV(contacts: Contact[]) {
+  if (contacts.length === 0) return
+  
+  const headers = ["Name", "Email", "Phone", "Country", "City", "Type", "Status", "Industry"]
+  const rows = contacts.map(c => [
+    c.name,
+    c.email,
+    c.phone,
+    c.country || "",
+    c.city || "",
+    c.type || "",
+    c.status || "",
+    c.industry || "",
+  ])
+  
+  const csvContent = [
+    headers.join(","),
+    ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
+  ].join("\n")
+  
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(blob)
+  link.download = `contacts_${new Date().toISOString().split("T")[0]}.csv`
+  link.click()
+}
+
+function exportToPDF(contacts: Contact[]) {
+  if (contacts.length === 0) return
+  
+  const doc = document.createElement("div")
+  doc.innerHTML = `
+    <style>
+      body { font-family: Arial, sans-serif; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+      th { background-color: #f2f2f2; font-weight: bold; }
+      h1 { color: #333; }
+    </style>
+    <h1>Contacts Report</h1>
+    <p>Generated on ${new Date().toLocaleDateString()}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Country</th>
+          <th>City</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${contacts.map(c => `
+          <tr>
+            <td>${c.name}</td>
+            <td>${c.email}</td>
+            <td>${c.phone}</td>
+            <td>${c.country || "-"}</td>
+            <td>${c.city || "-"}</td>
+            <td>${c.type || "-"}</td>
+            <td>${c.status || "-"}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `
+  
+  const newWindow = window.open("", "", "width=800,height=600")
+  if (newWindow) {
+    newWindow.document.write(doc.innerHTML)
+    newWindow.document.close()
+    setTimeout(() => newWindow.print(), 250)
+  }
+}
+
+function printContacts(contacts: Contact[]) {
+  if (contacts.length === 0) return
+  
+  const doc = document.createElement("div")
+  doc.innerHTML = `
+    <style>
+      @media print {
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+      }
+    </style>
+    <h2>Contacts List</h2>
+    <p>Printed on ${new Date().toLocaleDateString()}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Location</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${contacts.map(c => `
+          <tr>
+            <td>${c.name}</td>
+            <td>${c.email}</td>
+            <td>${c.phone}</td>
+            <td>${c.city ? c.city + (c.country ? ", " + c.country : "") : c.country || "-"}</td>
+            <td>${c.type || "-"}</td>
+            <td>${c.status || "-"}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `
+  
+  const newWindow = window.open("", "", "width=800,height=600")
+  if (newWindow) {
+    newWindow.document.write(doc.innerHTML)
+    newWindow.document.close()
+    setTimeout(() => newWindow.print(), 250)
+  }
+}
+
+function archiveContacts(contacts: Contact[]) {
+  console.log("[v0] Archiving", contacts.length, "contact(s)")
+  // TODO: Implement archive functionality - update contact status in database
+}
+
+function deleteContacts(contacts: Contact[]) {
+  console.log("[v0] Deleting", contacts.length, "contact(s)")
+  // TODO: Implement delete functionality - remove contacts from database
+}
