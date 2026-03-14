@@ -286,26 +286,26 @@ export function ContactsTable({
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-card">
         <table className="w-full text-left border-collapse min-w-[900px]">
-          <thead className="sticky top-0 bg-muted/50 z-10">
-            <tr className="text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-              <th className="px-4 py-3 w-10">
+          <thead className="sticky top-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 z-10">
+            <tr className="text-xs font-semibold text-foreground uppercase tracking-wider border-b-2 border-slate-200 dark:border-slate-700">
+              <th className="px-4 py-4 w-10 font-bold text-slate-600 dark:text-slate-400">
                 <Checkbox
                   checked={selectedRows.size === filteredContacts.length && filteredContacts.length > 0}
                   onCheckedChange={toggleAll}
                 />
               </th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Location</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Tags</th>
-              <th className="px-4 py-3 w-10"></th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Name</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Email</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Phone</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Location</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Type</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Tags</th>
+              <th className="px-4 py-4 w-10"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border text-sm">
+          <tbody className="divide-y-2 divide-slate-100 dark:divide-slate-700 text-sm">
             {filteredContacts.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((contact) => {
               const isSelected = selectedContactId === contact.id
               const isChecked = selectedRows.has(contact.id)
@@ -316,34 +316,34 @@ export function ContactsTable({
                   key={contact.id}
                   onClick={() => onRowClick(contact)}
                   className={cn(
-                    "cursor-pointer transition-colors",
+                    "cursor-pointer transition-all duration-200 hover:shadow-sm",
                     isSelected
-                      ? "bg-accent/10 border-l-4 border-l-accent"
-                      : "hover:bg-muted/50 border-l-4 border-l-transparent"
+                      ? "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500 shadow-sm"
+                      : "bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900/50 border-l-4 border-l-transparent"
                   )}
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <Checkbox
                       checked={isChecked}
                       onClick={(e) => toggleRow(contact.id, e)}
                     />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     {editingRowId === contact.id ? (
                       <Input
                         type="text"
                         value={editValues.name || ""}
                         onChange={(e) => setEditValues({ ...editValues, name: e.target.value })}
-                        className="h-8"
+                        className="h-9"
                         autoFocus
                       />
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
                           {contact.initials}
                         </div>
                         <div>
-                          <span className={cn("font-semibold", isSelected && "text-accent")}>{contact.name}</span>
+                          <span className={cn("font-semibold", isSelected && "text-blue-600 dark:text-blue-400")}>{contact.name}</span>
                           {(contact.customerRank ?? 0) >= 4 && (
                             <Star className="inline h-3 w-3 ml-1 text-amber-500 fill-amber-500" />
                           )}
@@ -351,31 +351,31 @@ export function ContactsTable({
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
                     {editingRowId === contact.id ? (
                       <Input
                         type="email"
                         value={editValues.email || ""}
                         onChange={(e) => setEditValues({ ...editValues, email: e.target.value })}
-                        className="h-8"
+                        className="h-9"
                       />
                     ) : (
                       contact.email
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
                     {editingRowId === contact.id ? (
                       <Input
                         type="tel"
                         value={editValues.phone || ""}
                         onChange={(e) => setEditValues({ ...editValues, phone: e.target.value })}
-                        className="h-8"
+                        className="h-9"
                       />
                     ) : (
                       contact.phone
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
                     {editingRowId === contact.id ? (
                       <div className="flex gap-2">
                         <Input
@@ -383,51 +383,51 @@ export function ContactsTable({
                           value={editValues.city || ""}
                           onChange={(e) => setEditValues({ ...editValues, city: e.target.value })}
                           placeholder="City"
-                          className="h-8 flex-1"
+                          className="h-9 flex-1"
                         />
                         <Input
                           type="text"
                           value={editValues.country || ""}
                           onChange={(e) => setEditValues({ ...editValues, country: e.target.value })}
                           placeholder="Country"
-                          className="h-8 flex-1"
+                          className="h-9 flex-1"
                         />
                       </div>
                     ) : (
                       contact.city && contact.country ? `${contact.city}, ${contact.country}` : contact.country || "-"
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     {typeCfg && (
-                      <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold", typeCfg.className)}>
+                      <span className={cn("px-3 py-1 rounded-full text-[10px] font-bold", typeCfg.className)}>
                         {typeCfg.label.toUpperCase()}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <div className="flex gap-1 flex-wrap">
                       {contact.tags?.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"
+                          className="px-2.5 py-1 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                         >
                           {tag}
                         </span>
                       ))}
                       {(contact.tags?.length ?? 0) > 2 && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                           +{(contact.tags?.length ?? 0) - 2}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     {editingRowId === contact.id ? (
                       <div className="flex gap-1">
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0"
+                          className="h-9 w-9 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
                           onClick={(e) => {
                             e.stopPropagation()
                             // TODO: Save the changes
@@ -435,26 +435,26 @@ export function ContactsTable({
                             setEditingRowId(null)
                           }}
                         >
-                          <Check className="h-4 w-4 text-green-500" />
+                          <Check className="h-4 w-4 text-green-600" />
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0"
+                          className="h-9 w-9 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                           onClick={(e) => {
                             e.stopPropagation()
                             setEditingRowId(null)
                             setEditValues({})
                           }}
                         >
-                          <X className="h-4 w-4 text-red-500" />
+                          <X className="h-4 w-4 text-red-600" />
                         </Button>
                       </div>
                     ) : (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                          <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <MoreVertical className="h-4 w-4 text-slate-500" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
