@@ -303,7 +303,7 @@ export function ContactsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-border text-sm">
-            {filteredContacts.map((contact) => {
+            {filteredContacts.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((contact) => {
               const isSelected = selectedContactId === contact.id
               const isChecked = selectedRows.has(contact.id)
               const typeCfg = contact.type ? contactTypeConfig[contact.type] : null
@@ -409,7 +409,7 @@ export function ContactsTable({
       {/* Footer Pagination */}
       <footer className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
         <div>
-          Total: <span className="font-semibold text-foreground">{totalContacts.toLocaleString()} contacts</span>
+          Total: <span className="font-semibold text-foreground">{filteredContacts.length.toLocaleString()} contacts</span>
         </div>
         <div className="flex items-center gap-4">
           {editingPageRange ? (
@@ -427,13 +427,13 @@ export function ContactsTable({
                     if (match) {
                       const start = parseInt(match[1])
                       const end = parseInt(match[2])
-                      setPageSize(end - start + 1)
-                      setCurrentPage(Math.ceil(start / (end - start + 1)))
+                      const newPageSize = end - start + 1
+                      setPageSize(newPageSize)
+                      setCurrentPage(1)
                     }
                     setEditingPageRange(false)
                   } else if (e.key === "Escape") {
                     setEditingPageRange(false)
-                    setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
                   }
                 }}
                 autoFocus
@@ -447,8 +447,9 @@ export function ContactsTable({
                   if (match) {
                     const start = parseInt(match[1])
                     const end = parseInt(match[2])
-                    setPageSize(end - start + 1)
-                    setCurrentPage(Math.ceil(start / (end - start + 1)))
+                    const newPageSize = end - start + 1
+                    setPageSize(newPageSize)
+                    setCurrentPage(1)
                   }
                   setEditingPageRange(false)
                 }}
@@ -461,7 +462,6 @@ export function ContactsTable({
                 className="h-8 px-2"
                 onClick={() => {
                   setEditingPageRange(false)
-                  setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
                 }}
               >
                 Cancel
@@ -470,12 +470,14 @@ export function ContactsTable({
           ) : (
             <button
               onClick={() => {
+                const start = (currentPage - 1) * pageSize + 1
+                const end = Math.min(currentPage * pageSize, filteredContacts.length)
+                setPageRangeInput(`${start}-${end}`)
                 setEditingPageRange(true)
-                setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
               }}
               className="hover:text-foreground transition-colors cursor-pointer font-semibold"
             >
-              1-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
+              {Math.max(1, (currentPage - 1) * pageSize + 1)}-{Math.min(currentPage * pageSize, filteredContacts.length)} of {filteredContacts.length}
             </button>
           )}
           <div className="flex items-center gap-1">
