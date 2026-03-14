@@ -604,30 +604,70 @@ export function ContactsListView({
           )}
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span>Items per page:</span>
-            <Input
-              type="number"
-              min="1"
-              value={pageSize}
-              onChange={(e) => setPageSize(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-16 h-8"
-            />
-          </div>
-          <button
-            onClick={() => {
-              const newRange = prompt("Enter items per page (e.g., 10, 25, 50):", pageSize.toString())
-              if (newRange) {
-                const size = parseInt(newRange)
-                if (size > 0) {
-                  setPageSize(size)
-                }
-              }
-            }}
-            className="px-3 py-1.5 rounded-lg border border-border hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all cursor-pointer font-semibold text-foreground"
-          >
-            {Math.max(1, 1)}-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
-          </button>
+          {editingPageRange ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
+              <Input
+                type="text"
+                value={pageRangeInput}
+                onChange={(e) => setPageRangeInput(e.target.value)}
+                placeholder="1-10"
+                className="w-24 h-8 text-sm font-semibold border-blue-300"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const match = pageRangeInput.match(/(\d+)-(\d+)/)
+                    if (match) {
+                      const start = parseInt(match[1])
+                      const end = parseInt(match[2])
+                      if (start > 0 && end > start && end <= filteredContacts.length) {
+                        setPageSize(end - start + 1)
+                        setCurrentPage(1)
+                      }
+                    }
+                    setEditingPageRange(false)
+                  } else if (e.key === "Escape") {
+                    setEditingPageRange(false)
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                className="h-8 px-2 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  const match = pageRangeInput.match(/(\d+)-(\d+)/)
+                  if (match) {
+                    const start = parseInt(match[1])
+                    const end = parseInt(match[2])
+                    if (start > 0 && end > start && end <= filteredContacts.length) {
+                      setPageSize(end - start + 1)
+                      setCurrentPage(1)
+                    }
+                  }
+                  setEditingPageRange(false)
+                }}
+              >
+                OK
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-2"
+                onClick={() => setEditingPageRange(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setPageRangeInput(`1-${Math.min(pageSize, filteredContacts.length)}`)
+                setEditingPageRange(true)
+              }}
+              className="px-3 py-1.5 rounded-lg border border-border hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all cursor-pointer font-semibold text-foreground"
+            >
+              {Math.max(1, 1)}-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}
+            </button>
+          )}
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
               <ChevronLeft className="h-4 w-4" />
