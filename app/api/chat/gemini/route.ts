@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { question, context, conversationHistory } = await request.json()
+    const { question, context, conversationHistory, purpose = "chat", userPermissions = "all" } = await request.json()
 
     // Get Gemini API key from environment
     const geminiApiKey = process.env.GEMINI_API_KEY
@@ -16,27 +16,41 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Build efficient, minimal context (only essential fields)
-    const buildContext = () => {
-      const fields = []
-      
-      if (context?.contactName) fields.push(`Contact: ${context.contactName}`)
-      if (context?.type) fields.push(`Type: ${context.type}`)
-      if (context?.status) fields.push(`Statut: ${context.status}`)
-      if (context?.tags?.length) fields.push(`Étiquettes: ${context.tags.join(", ")}`)
-      
-      return fields.join(" | ")
+    // Build context based on purpose
+    let systemPrompt = ""
+    let maxTokens = 200
+
+    switch (purpose) {
+      case "suggestion":
+        systemPrompt = `Tu es un assistant IA intelligent pour la gestion des contacts. 
+        Fournis des suggestions intelligentes et des idées pour aider l'utilisateur.
+        Contexte actuel: Contact: ${context?.contactName || "aucun"} | Type: ${context?.type || "inconnu"} | Statut: ${context?.status || "inconnu"} | Étiquettes: ${context?.tags?.join(", ") || "aucune"}
+        Utilisateur: ${userPermissions}
+        Sois concis, actionnable et pratique. Format: liste numérotée si applicable.`
+        maxTokens = 300
+        break
+
+      case "search":
+        systemPrompt = `Tu es un assistant de recherche pour une base de données de contacts.
+        Aide l'utilisateur à trouver des contacts pertinents basés sur sa requête.
+        Base de données: Contacts avec champs: nom, email, téléphone, type, statut, région, ville, pays, secteur d'activité
+        Permissions utilisateur: ${userPermissions}
+        Retourne des suggestions de recherche et des filtres pertinents.
+        Requête: ${question}`
+        maxTokens = 250
+        break
+
+      default: // "chat"
+        systemPrompt = `Tu es un assistant ERP français pour la gestion des contacts d'entreprise.
+        Contexte: Contact: ${context?.contactName || "aucun"} | Type: ${context?.type || "inconnu"} | Statut: ${context?.status || "inconnu"} | Étiquettes: ${context?.tags?.join(", ") || "aucune"}
+        Utilisateur: ${userPermissions}
+        Sois utile et adapté au contexte.`
     }
 
-    const minimalContext = buildContext()
-
-    // Build short prompt (tokens-optimized)
-    let systemPrompt = `Tu es un assistant ERP français. ${minimalContext}`
-    
-    // Add recent conversation context only (last 3 messages max)
+    // Add recent conversation context only (last 2 messages max for token efficiency)
     let conversationContext = ""
     if (conversationHistory && conversationHistory.length > 0) {
-      const recent = conversationHistory.slice(-3)
+      const recent = conversationHistory.slice(-2)
       recent.forEach((msg: any) => {
         const role = msg.type === "user" ? "Utilisateur" : "Assistant"
         conversationContext += `\n${role}: ${msg.content}`
@@ -44,11 +58,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Final optimized prompt
-    const prompt = `${systemPrompt}${conversationContext}\n\nUtilisateur: ${question}\n\nAssistant (réponse courte):`
+    const prompt = `${systemPrompt}${conversationContext}\n\nUtilisateur: ${question}\n\nAssistant (réponse rapide):`
 
-    console.log("[v0] Gemini prompt length:", prompt.length)
+    console.log("[v0] Gemini request - Purpose:", purpose, "- Token estimate:", Math.ceil(prompt.length / 4))
 
-    // Call Gemini API
+    // Call Gemini API with flash model
     const geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
       {
@@ -67,10 +81,10 @@ export async function POST(request: NextRequest) {
             },
           ],
           generationConfig: {
-            temperature: 0.6,
+            temperature: purpose === "suggestion" ? 0.8 : 0.6,
             topK: 30,
             topP: 0.85,
-            maxOutputTokens: 200,
+            maxOutputTokens: maxTokens,
           },
         }),
       }
@@ -94,11 +108,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log("[v0] Gemini response received successfully")
+    console.log("[v0] Gemini response received successfully for purpose:", purpose)
 
     return NextResponse.json({
       response: fullResponse.trim(),
       success: true,
+      purpose: purpose,
     })
   } catch (error) {
     console.error("[v0] Chat API error:", error)

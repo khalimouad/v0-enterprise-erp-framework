@@ -49,6 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { GlobalSearchDialog } from "@/components/global-search-dialog"
 
 // Color themes
 export type ColorTheme = "orange" | "slate" | "navy"
@@ -215,6 +216,21 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [mobileExpandedModule, setMobileExpandedModule] = React.useState<string | null>(null)
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false)
+
+  // Global keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K to open search
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault()
+        setIsSearchOpen(true)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
 
   // Determine active module from pathname
   const activeModule = React.useMemo(() => {
@@ -329,11 +345,16 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
             )}
 
             {/* Global Search */}
-            <Button variant="ghost" size="sm" className="w-[180px] justify-start bg-white/10 border-0 text-white/70 hover:bg-white/15 hover:text-white">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setIsSearchOpen(true)}
+              className="w-[200px] justify-start bg-white/10 border-0 text-white/70 hover:bg-white/15 hover:text-white"
+            >
               <Search className="h-4 w-4 mr-2" />
-              <span>Search...</span>
+              <span>Search contacts...</span>
               <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-white/20 bg-white/10 px-1.5 font-mono text-[10px] font-medium text-white/70">
-                K
+                <span className="text-xs">⌘</span>K
               </kbd>
             </Button>
 
@@ -602,6 +623,13 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
           </div>
         </div>
       )}
+
+      {/* Global Search Dialog */}
+      <GlobalSearchDialog 
+        open={isSearchOpen} 
+        onOpenChange={setIsSearchOpen}
+        userPermissions="all"
+      />
     </header>
   )
 }
