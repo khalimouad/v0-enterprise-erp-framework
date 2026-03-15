@@ -62,8 +62,8 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
     setIsLoading(true)
 
     try {
-      // Call Ollama API
-      const response = await fetch("/api/chat/ollama", {
+      // Call Gemini API
+      const response = await fetch("/api/chat/gemini", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,12 +94,12 @@ export function ContactAIChat({ contact }: ContactAIChatProps) {
 
       setMessages((prev) => [...prev, assistantMessage])
     } catch (error) {
-      console.error("[v0] Error calling Ollama:", error)
+      console.error("[v0] Error calling Gemini:", error)
       const errorMessage: ChatMessage = {
         id: String(Date.now() + 1),
         type: "assistant",
         content:
-          "Je rencontre une difficulté pour me connecter au service d'IA. Veuillez vous assurer qu'Ollama est en cours d'exécution sur votre système.",
+          "Je rencontre une difficulté pour me connecter au service d'IA Gemini. Veuillez vous assurer que votre clé API est correctement configurée.",
         timestamp: new Date().toLocaleTimeString("fr-FR"),
       }
       setMessages((prev) => [...prev, errorMessage])
