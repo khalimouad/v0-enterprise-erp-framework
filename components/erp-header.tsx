@@ -217,17 +217,9 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [mobileExpandedModule, setMobileExpandedModule] = React.useState<string | null>(null)
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
-  const [isHydrated, setIsHydrated] = React.useState(false)
-
-  // Only render interactive components after hydration to prevent mismatch
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
 
   // Global keyboard shortcuts
   React.useEffect(() => {
-    if (!isHydrated) return
-
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd/Ctrl + K to open search
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -238,7 +230,7 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isHydrated])
+  }, [])
 
   // Determine active module from pathname
   const activeModule = React.useMemo(() => {
@@ -287,7 +279,6 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
     <header suppressHydrationWarning={true} className="sticky top-0 z-50 w-full border-b border-border bg-background">
       {/* Desktop Navigation */}
       <div className="hidden lg:block">
-        {isHydrated && (
         {/* Primary Navigation Bar - NO hover dropdown, only click navigates */}
         <div className={cn("flex h-14 items-center px-4 gap-4 text-white", theme.primary)}>
           {/* Logo */}
@@ -467,7 +458,6 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
       {/* Mobile/Tablet Navigation */}
       <div className={cn("lg:hidden flex h-14 items-center px-4 gap-4 text-white", theme.primary)}>
         {/* Mobile Menu */}
-        {isHydrated && (
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
@@ -581,7 +571,6 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
             </div>
           </SheetContent>
         </Sheet>
-        )}
 
         {/* Logo - Centered on Mobile */}
         <Link href="/" className="flex items-center gap-2 flex-1 justify-center">
@@ -637,13 +626,11 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
       )}
 
       {/* Global Search Dialog */}
-      {isHydrated && (
       <GlobalSearchDialog 
         open={isSearchOpen} 
         onOpenChange={setIsSearchOpen}
         userPermissions="all"
       />
-      )}
     </header>
   )
 }
