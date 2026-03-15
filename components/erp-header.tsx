@@ -284,9 +284,10 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
   const theme = getThemeClasses()
 
   return (
-    <header suppressHydrationWarning className="sticky top-0 z-50 w-full border-b border-border bg-background">
+    <header suppressHydrationWarning={true} className="sticky top-0 z-50 w-full border-b border-border bg-background">
       {/* Desktop Navigation */}
       <div className="hidden lg:block">
+        {isHydrated && (
         {/* Primary Navigation Bar - NO hover dropdown, only click navigates */}
         <div className={cn("flex h-14 items-center px-4 gap-4 text-white", theme.primary)}>
           {/* Logo */}
@@ -466,6 +467,7 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
       {/* Mobile/Tablet Navigation */}
       <div className={cn("lg:hidden flex h-14 items-center px-4 gap-4 text-white", theme.primary)}>
         {/* Mobile Menu */}
+        {isHydrated && (
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
@@ -579,6 +581,7 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
             </div>
           </SheetContent>
         </Sheet>
+        )}
 
         {/* Logo - Centered on Mobile */}
         <Link href="/" className="flex items-center gap-2 flex-1 justify-center">
@@ -634,11 +637,13 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
       )}
 
       {/* Global Search Dialog */}
+      {isHydrated && (
       <GlobalSearchDialog 
         open={isSearchOpen} 
         onOpenChange={setIsSearchOpen}
         userPermissions="all"
       />
+      )}
     </header>
   )
 }
