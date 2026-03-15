@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Search, Sparkles, Loader2, X } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -95,6 +95,7 @@ export function GlobalSearchDialog({
       <DialogContent className="max-w-2xl p-0 gap-0 border-0">
         <DialogHeader className="sr-only">
           <DialogTitle>Global Search</DialogTitle>
+          <DialogDescription>Search contacts and get AI suggestions</DialogDescription>
         </DialogHeader>
         
         {/* Search Input */}
