@@ -48,7 +48,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { GlobalSearchDialog } from "@/components/global-search-dialog"
 
 // Color themes
@@ -466,6 +466,7 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] p-0">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className={cn("flex items-center justify-between p-4 border-b border-border text-white", theme.primary)}>
