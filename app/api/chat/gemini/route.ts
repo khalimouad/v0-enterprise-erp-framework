@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Gemini request - Purpose:", purpose, "- Token estimate:", Math.ceil(prompt.length / 4))
 
-    // Call Gemini API with flash model
+    // Call Gemini API with latest Flash model
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
       {
         method: "POST",
         headers: {

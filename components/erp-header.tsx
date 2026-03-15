@@ -217,9 +217,17 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [mobileExpandedModule, setMobileExpandedModule] = React.useState<string | null>(null)
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
+  const [isHydrated, setIsHydrated] = React.useState(false)
+
+  // Only render interactive components after hydration to prevent mismatch
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   // Global keyboard shortcuts
   React.useEffect(() => {
+    if (!isHydrated) return
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd/Ctrl + K to open search
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -230,7 +238,7 @@ export function ERPHeader({ colorTheme = "slate", onThemeChange }: ERPHeaderProp
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
+  }, [isHydrated])
 
   // Determine active module from pathname
   const activeModule = React.useMemo(() => {
