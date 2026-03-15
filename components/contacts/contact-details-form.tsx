@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Trash2, Save, Plus, Edit2, Check, X } from "lucide-react"
+import { Trash2, Save, Plus, Edit2, Check, X, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { getContactConfig } from "@/lib/contact-config"
 import type { Contact } from "@/lib/types"
+import Link from "next/link"
 
 interface ContactDetailsFormProps {
   contact: Contact
@@ -43,6 +45,11 @@ export function ContactDetailsForm({
     email: "",
     phone: "",
   })
+  const [config, setConfig] = React.useState(getContactConfig())
+
+  React.useEffect(() => {
+    setConfig(getContactConfig())
+  }, [])
   
   const handleChange = (field: keyof Contact, value: any) => {
     onChange({ ...contact, [field]: value })
@@ -185,6 +192,11 @@ export function ContactDetailsForm({
               Contacts
             </TabsTrigger>
           </TabsList>
+          <Link href="/contacts/settings">
+            <Button variant="ghost" size="icon" className="absolute top-4 right-4 h-10 w-10 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Configuration">
+              <Settings className="h-5 w-5 text-blue-600" />
+            </Button>
+          </Link>
 
           {/* General Tab */}
           <TabsContent value="general" className="flex-1 overflow-y-auto min-h-96">
@@ -259,13 +271,11 @@ export function ContactDetailsForm({
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="technology">Technologie</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="retail">Vente au Détail</SelectItem>
-                      <SelectItem value="healthcare">Santé</SelectItem>
-                      <SelectItem value="manufacturing">Fabrication</SelectItem>
-                      <SelectItem value="services">Services</SelectItem>
-                      <SelectItem value="other">Autre</SelectItem>
+                      {config.industries.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -291,12 +301,11 @@ export function ContactDetailsForm({
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="souss-massa">Souss-Massa</SelectItem>
-                      <SelectItem value="marrakech">Marrakech-Safi</SelectItem>
-                      <SelectItem value="casablanca">Casablanca-Settat</SelectItem>
-                      <SelectItem value="fes">Fès-Meknès</SelectItem>
-                      <SelectItem value="tangier">Tanger-Tétouan</SelectItem>
-                      <SelectItem value="rabat">Rabat-Salé</SelectItem>
+                      {config.regions.map((region) => (
+                        <SelectItem key={region} value={region}>
+                          {region}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -312,12 +321,11 @@ export function ContactDetailsForm({
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="agadir">Agadir</SelectItem>
-                      <SelectItem value="marrakech">Marrakech</SelectItem>
-                      <SelectItem value="casablanca">Casablanca</SelectItem>
-                      <SelectItem value="fes">Fès</SelectItem>
-                      <SelectItem value="tangier">Tanger</SelectItem>
-                      <SelectItem value="rabat">Rabat</SelectItem>
+                      {config.cities.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -333,11 +341,11 @@ export function ContactDetailsForm({
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="maroc">Maroc</SelectItem>
-                      <SelectItem value="algerie">Algérie</SelectItem>
-                      <SelectItem value="tunisie">Tunisie</SelectItem>
-                      <SelectItem value="france">France</SelectItem>
-                      <SelectItem value="espagne">Espagne</SelectItem>
+                      {config.countries.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
