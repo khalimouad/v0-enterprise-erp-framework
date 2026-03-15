@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { getContactConfig, saveContactConfig, type ContactConfig } from "@/lib/contact-config"
-import { ArrowLeft, Plus, Trash2, Edit2, Check, X } from "lucide-react"
+import { exportAsJSON, exportAsCSV, importFromJSON, importFromCSV } from "@/lib/import-export"
+import { ArrowLeft, Plus, Trash2, Edit2, Check, X, Download, Upload } from "lucide-react"
 import Link from "next/link"
 
 interface ConfigSubPageProps {
@@ -22,6 +23,7 @@ export function ConfigSubPage({ title, description, configKey, backHref = "/cont
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null)
   const [editValue, setEditValue] = React.useState("")
   const [isSaved, setIsSaved] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     const loadConfig = () => {
@@ -70,6 +72,50 @@ export function ConfigSubPage({ title, description, configKey, backHref = "/cont
       setConfig(updated)
       setIsSaved(true)
       setTimeout(() => setIsSaved(false), 2000)
+    }
+  }
+
+  const handleExportJSON = () => {
+    exportAsJSON(items, configKey as string)
+  }
+
+  const handleExportCSV = () => {
+    exportAsCSV(items, configKey as string)
+  }
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      let importedItems: string[] = []
+
+      if (file.name.endsWith('.json')) {
+        const result = await importFromJSON(file)
+        importedItems = result.items
+      } else if (file.name.endsWith('.csv')) {
+        importedItems = await importFromCSV(file)
+      } else {
+        alert('Format de fichier non supporté. Veuillez utiliser JSON ou CSV.')
+        return
+      }
+
+      // Merge with existing items, removing duplicates
+      const merged = Array.from(new Set([...items, ...importedItems]))
+      setItems(merged)
+      saveChanges(merged)
+      alert(`${importedItems.length} élément(s) importé(s) avec succès`)
+    } catch (error) {
+      alert(`Erreur lors de l'import: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -127,6 +173,57 @@ export function ConfigSubPage({ title, description, configKey, backHref = "/cont
             >
               <Plus className="h-4 w-4" />
               Ajouter
+            </Button>
+          </div>
+        </Card>
+
+        {/* Import/Export Section */}
+        <Card className="border-2 border-slate-200 dark:border-slate-700 p-6">
+          <h3 className="text-lg font-bold text-foreground mb-4">Import / Export</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Button
+              onClick={handleExportJSON}
+              variant="outline"
+              className="gap-2 border-slate-300 dark:border-slate-600"
+            >
+              <Download className="h-4 w-4" />
+              Export JSON
+            </Button>
+            <Button
+              onClick={handleExportCSV}
+              variant="outline"
+              className="gap-2 border-slate-300 dark:border-slate-600"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+            <Button
+              onClick={handleImportClick}
+              variant="outline"
+              className="gap-2 border-slate-300 dark:border-slate-600"
+            >
+              <Upload className="h-4 w-4" />
+              Importer
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,.csv"
+              onChange={handleFileImport}
+              className="hidden"
+            />
+            <Button
+              onClick={() => {
+                if (confirm('Êtes-vous sûr? Tous les éléments seront supprimés.')) {
+                  setItems([])
+                  saveChanges([])
+                }
+              }}
+              variant="outline"
+              className="gap-2 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400"
+            >
+              <Trash2 className="h-4 w-4" />
+              Tout effacer
             </Button>
           </div>
         </Card>
