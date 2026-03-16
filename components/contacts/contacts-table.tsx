@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, Filter, Columns, Download, Plus, MoreVertical, ChevronLeft, ChevronRight, Edit, Trash2, Copy, Mail, Phone, Star } from "lucide-react"
+import { Search, Filter, Columns, Download, Plus, MoreVertical, ChevronLeft, ChevronRight, Edit, Trash2, Copy, Mail, Phone, Star, Archive, FileText, Printer, X, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -44,6 +44,13 @@ export function ContactsTable({
 }: ContactsTableProps) {
   const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [pageSize, setPageSize] = React.useState(25)
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [editingPageRange, setEditingPageRange] = React.useState(false)
+  const [pageRangeInput, setPageRangeInput] = React.useState(`1-${Math.min(25, contacts.length)}`)
+  const [editingRowId, setEditingRowId] = React.useState<string | null>(null)
+  const [editValues, setEditValues] = React.useState<Partial<Contact>>({})
+
 
   const filteredContacts = React.useMemo(() => {
     if (!searchQuery) return contacts
@@ -79,8 +86,154 @@ export function ContactsTable({
     }
   }
 
+  // Bulk action handlers
+  const handleBulkDelete = () => {
+    console.log("[v0] Delete selected contacts:", Array.from(selectedRows))
+    // TODO: Implement delete action
+    setSelectedRows(new Set())
+  }
+
+  const handleBulkArchive = () => {
+    console.log("[v0] Archive selected contacts:", Array.from(selectedRows))
+    // TODO: Implement archive action
+    setSelectedRows(new Set())
+  }
+
+  const handleExportCSV = () => {
+    const selectedContacts = filteredContacts.filter((c) => selectedRows.has(c.id))
+    const csv = [
+      ["Name", "Email", "Phone", "Location", "Type", "Tags"],
+      ...selectedContacts.map((c) => [
+        c.name,
+        c.email,
+        c.phone,
+        `${c.city || ""}, ${c.country || ""}`.trim(),
+        c.type || "",
+        c.tags?.join("; ") || "",
+      ]),
+    ]
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n")
+
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "contacts.csv"
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  const handleExportPDF = () => {
+    console.log("[v0] Export PDF for selected contacts:", Array.from(selectedRows))
+    // TODO: Implement PDF export
+  }
+
+  const handlePrint = () => {
+    const selectedContacts = filteredContacts.filter((c) => selectedRows.has(c.id))
+    const printContent = selectedContacts
+      .map(
+        (c) =>
+          `<div style="page-break-inside: avoid; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc;">
+        <strong>${c.name}</strong><br/>
+        Email: ${c.email}<br/>
+        Phone: ${c.phone}<br/>
+        Location: ${c.city || ""}, ${c.country || ""}<br/>
+        Type: ${c.type || ""}<br/>
+        Tags: ${c.tags?.join(", ") || ""}<br/>
+      </div>`
+      )
+      .join("")
+
+    const printWindow = window.open("", "", "width=800,height=600")
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Contacts</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              @media print { body { margin: 0; } }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.print()
+    }
+  }
+
   return (
     <div className="flex flex-col h-full bg-card">
+      {/* Bulk Actions Toolbar */}
+      {selectedRows.size > 0 && (
+        <div className="px-4 py-3 border-b border-border bg-blue-50 dark:bg-blue-950 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-foreground">
+              {selectedRows.size} selected
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedRows(new Set())}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handleExportCSV}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">CSV</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handleExportPDF}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">PDF</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handlePrint}
+            >
+              <Printer className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Print</span>
+            </Button>
+            <div className="border-l border-border pl-2" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handleBulkArchive}
+            >
+              <Archive className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Archive</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-destructive hover:text-destructive"
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Delete</span>
+            </Button>
+          </div>
+        </div>
+      )}
       {/* Table Header / Actions */}
       <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 min-w-[300px]">
@@ -133,27 +286,27 @@ export function ContactsTable({
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-card">
         <table className="w-full text-left border-collapse min-w-[900px]">
-          <thead className="sticky top-0 bg-muted/50 z-10">
-            <tr className="text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-              <th className="px-4 py-3 w-10">
+          <thead className="sticky top-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 z-10">
+            <tr className="text-xs font-semibold text-foreground uppercase tracking-wider border-b-2 border-slate-200 dark:border-slate-700">
+              <th className="px-4 py-4 w-10 font-bold text-slate-600 dark:text-slate-400">
                 <Checkbox
                   checked={selectedRows.size === filteredContacts.length && filteredContacts.length > 0}
                   onCheckedChange={toggleAll}
                 />
               </th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Location</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Tags</th>
-              <th className="px-4 py-3 w-10"></th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Name</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Email</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Phone</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Location</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Type</th>
+              <th className="px-4 py-4 font-bold text-slate-600 dark:text-slate-400">Tags</th>
+              <th className="px-4 py-4 w-10"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border text-sm">
-            {filteredContacts.map((contact) => {
+          <tbody className="divide-y-2 divide-slate-100 dark:divide-slate-700 text-sm">
+            {filteredContacts.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((contact) => {
               const isSelected = selectedContactId === contact.id
               const isChecked = selectedRows.has(contact.id)
               const typeCfg = contact.type ? contactTypeConfig[contact.type] : null
@@ -163,81 +316,175 @@ export function ContactsTable({
                   key={contact.id}
                   onClick={() => onRowClick(contact)}
                   className={cn(
-                    "cursor-pointer transition-colors",
+                    "cursor-pointer transition-all duration-200 hover:shadow-sm",
                     isSelected
-                      ? "bg-accent/10 border-l-4 border-l-accent"
-                      : "hover:bg-muted/50 border-l-4 border-l-transparent"
+                      ? "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500 shadow-sm"
+                      : "bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900/50 border-l-4 border-l-transparent"
                   )}
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <Checkbox
                       checked={isChecked}
                       onClick={(e) => toggleRow(contact.id, e)}
                     />
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-                        {contact.initials}
+                  <td className="px-4 py-4">
+                    {editingRowId === contact.id ? (
+                      <Input
+                        type="text"
+                        value={editValues.name || ""}
+                        onChange={(e) => setEditValues({ ...editValues, name: e.target.value })}
+                        className="h-9"
+                        autoFocus
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
+                          {contact.initials}
+                        </div>
+                        <div>
+                          <span className={cn("font-semibold", isSelected && "text-blue-600 dark:text-blue-400")}>{contact.name}</span>
+                          {(contact.customerRank ?? 0) >= 4 && (
+                            <Star className="inline h-3 w-3 ml-1 text-amber-500 fill-amber-500" />
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <span className={cn("font-semibold", isSelected && "text-accent")}>{contact.name}</span>
-                        {(contact.customerRank ?? 0) >= 4 && (
-                          <Star className="inline h-3 w-3 ml-1 text-amber-500 fill-amber-500" />
-                        )}
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
+                    {editingRowId === contact.id ? (
+                      <Input
+                        type="email"
+                        value={editValues.email || ""}
+                        onChange={(e) => setEditValues({ ...editValues, email: e.target.value })}
+                        className="h-9"
+                      />
+                    ) : (
+                      contact.email
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
+                    {editingRowId === contact.id ? (
+                      <Input
+                        type="tel"
+                        value={editValues.phone || ""}
+                        onChange={(e) => setEditValues({ ...editValues, phone: e.target.value })}
+                        className="h-9"
+                      />
+                    ) : (
+                      contact.phone
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
+                    {editingRowId === contact.id ? (
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={editValues.city || ""}
+                          onChange={(e) => setEditValues({ ...editValues, city: e.target.value })}
+                          placeholder="City"
+                          className="h-9 flex-1"
+                        />
+                        <Input
+                          type="text"
+                          value={editValues.country || ""}
+                          onChange={(e) => setEditValues({ ...editValues, country: e.target.value })}
+                          placeholder="Country"
+                          className="h-9 flex-1"
+                        />
                       </div>
-                    </div>
+                    ) : (
+                      contact.city && contact.country ? `${contact.city}, ${contact.country}` : contact.country || "-"
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{contact.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{contact.phone}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {contact.city && contact.country ? `${contact.city}, ${contact.country}` : contact.country || "-"}
-                  </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     {typeCfg && (
-                      <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold", typeCfg.className)}>
+                      <span className={cn("px-3 py-1 rounded-full text-[10px] font-bold", typeCfg.className)}>
                         {typeCfg.label.toUpperCase()}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <div className="flex gap-1 flex-wrap">
                       {contact.tags?.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"
+                          className="px-2.5 py-1 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                         >
                           {tag}
                         </span>
                       ))}
                       {(contact.tags?.length ?? 0) > 2 && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                           +{(contact.tags?.length ?? 0) - 2}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                  <td className="px-4 py-4">
+                    {editingRowId === contact.id ? (
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-9 w-9 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            // TODO: Save the changes
+                            console.log("[v0] Saving contact changes:", editValues)
+                            setEditingRowId(null)
+                          }}
+                        >
+                          <Check className="h-4 w-4 text-green-600" />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(contact); }}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                          <Mail className="mr-2 h-4 w-4" />
-                          Send Email
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                          <Phone className="mr-2 h-4 w-4" />
-                          Call
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-9 w-9 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingRowId(null)
+                            setEditValues({})
+                          }}
+                        >
+                          <X className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <MoreVertical className="h-4 w-4 text-slate-500" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingRowId(contact.id)
+                              setEditValues(contact)
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Inline
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(contact); }}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Full Form
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Send Email
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                            <Phone className="mr-2 h-4 w-4" />
+                            Call
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </td>
                           <Copy className="mr-2 h-4 w-4" />
                           Duplicate
                         </DropdownMenuItem>
@@ -259,15 +506,78 @@ export function ContactsTable({
       {/* Footer Pagination */}
       <footer className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
         <div>
-          Total: <span className="font-semibold text-foreground">{totalContacts.toLocaleString()} contacts</span>
+          Total: <span className="font-semibold text-foreground">{filteredContacts.length.toLocaleString()} contacts</span>
         </div>
         <div className="flex items-center gap-4">
-          <span>1-{Math.min(25, filteredContacts.length)} of {filteredContacts.length}</span>
+          {editingPageRange ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
+              <span className="text-xs font-semibold text-foreground">Items per page:</span>
+              <Input
+                type="text"
+                value={pageRangeInput}
+                onChange={(e) => setPageRangeInput(e.target.value)}
+                placeholder="1-25"
+                className="h-8 w-32 text-sm font-semibold border-blue-300 focus:border-blue-500"
+              />
+              <Button
+                size="sm"
+                className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  const match = pageRangeInput.match(/(\d+)-(\d+)/)
+                  if (match) {
+                    const start = parseInt(match[1])
+                    const end = parseInt(match[2])
+                    const newPageSize = end - start + 1
+                    setPageSize(newPageSize)
+                    setCurrentPage(1)
+                  }
+                  setEditingPageRange(false)
+                }}
+              >
+                Apply
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-3"
+                onClick={() => {
+                  setEditingPageRange(false)
+                }}
+              >
+                Cancel
+              </Button>
+              <span className="text-xs text-muted-foreground ml-2">Format: start-end (e.g., 1-50)</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                const start = (currentPage - 1) * pageSize + 1
+                const end = Math.min(currentPage * pageSize, filteredContacts.length)
+                setPageRangeInput(`${start}-${end}`)
+                setEditingPageRange(true)
+              }}
+              className="px-3 py-2 rounded-lg hover:bg-muted transition-colors cursor-pointer font-semibold text-foreground border border-transparent hover:border-border"
+            >
+              {Math.max(1, (currentPage - 1) * pageSize + 1)}-{Math.min(currentPage * pageSize, filteredContacts.length)} of {filteredContacts.length}
+            </button>
+          )}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage * pageSize >= filteredContacts.length}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

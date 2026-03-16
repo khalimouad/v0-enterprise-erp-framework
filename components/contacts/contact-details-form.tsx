@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Trash2, Save, Plus, Edit2, Check, X } from "lucide-react"
+import { Trash2, Save, Plus, Edit2, Check, X, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { getContactConfig } from "@/lib/contact-config"
 import type { Contact } from "@/lib/types"
+import Link from "next/link"
 
 interface ContactDetailsFormProps {
   contact: Contact
@@ -30,6 +32,24 @@ export function ContactDetailsForm({
   onCancel,
 }: ContactDetailsFormProps) {
   const [tagInput, setTagInput] = React.useState("")
+  const [editingRowIndex, setEditingRowIndex] = React.useState<number | null>(null)
+  const [editValues, setEditValues] = React.useState({
+    name: "",
+    function: "",
+    email: "",
+    phone: "",
+  })
+  const [newContact, setNewContact] = React.useState({
+    name: "",
+    function: "",
+    email: "",
+    phone: "",
+  })
+  const [config, setConfig] = React.useState(getContactConfig())
+
+  React.useEffect(() => {
+    setConfig(getContactConfig())
+  }, [])
   
   const handleChange = (field: keyof Contact, value: any) => {
     onChange({ ...contact, [field]: value })
@@ -152,35 +172,51 @@ export function ContactDetailsForm({
       {/* Tabs Section */}
       <div className="flex-1 overflow-hidden">
         <Tabs defaultValue="general" className="flex h-full flex-col">
-          <TabsList className="grid w-full grid-cols-6 gap-0 border-b-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 dark:border-slate-600 dark:from-slate-700 dark:to-slate-600">
-            <TabsTrigger value="general" className="text-xs font-semibold md:text-sm">
+          <TabsList className="grid w-full grid-cols-6 gap-3 border-0 bg-slate-50 dark:bg-slate-800 px-4 py-4 rounded-none">
+            <TabsTrigger value="general" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Général
             </TabsTrigger>
-            <TabsTrigger value="contact" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="contact" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Contact
             </TabsTrigger>
-            <TabsTrigger value="address" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="address" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Adresse
             </TabsTrigger>
-            <TabsTrigger value="tax" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="tax" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Fiscal
             </TabsTrigger>
-            <TabsTrigger value="company" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="company" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Entreprise
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="text-xs font-semibold md:text-sm">
+            <TabsTrigger value="contacts" className="text-xs font-bold md:text-sm px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-lg">
               Contacts
             </TabsTrigger>
           </TabsList>
+          <Link href="/contacts/settings">
+            <Button variant="ghost" size="icon" className="absolute top-4 right-4 h-10 w-10 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Configuration">
+              <Settings className="h-5 w-5 text-blue-600" />
+            </Button>
+          </Link>
 
           {/* General Tab */}
-          <TabsContent value="general" className="flex-1 overflow-y-auto p-6 min-h-96">
-          <div className="space-y-6">
+          <TabsContent value="general" className="flex-1 overflow-y-auto min-h-96">
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-8 space-y-8">
+            
+            {/* Header Section */}
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Classification</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <Label htmlFor="customerRank" className="text-sm font-medium">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Informations Générales</h2>
+              <p className="text-sm text-muted-foreground">Gérez les informations principales de ce contact</p>
+            </div>
+
+            {/* Classification Section */}
+            <div className="bg-white dark:bg-slate-700 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-600">
+              <h3 className="text-base font-bold text-foreground mb-6 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Classification
+              </h3>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="customerRank" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                     Classement Client
                   </Label>
                   <Select
@@ -189,7 +225,7 @@ export function ContactDetailsForm({
                       handleChange("customerRank", parseInt(value))
                     }
                   >
-                    <SelectTrigger className="mt-1 bg-slate-50 dark:bg-slate-700">
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -201,8 +237,8 @@ export function ContactDetailsForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="supplierRank" className="text-sm font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="supplierRank" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                     Classement Fournisseur
                   </Label>
                   <Select
@@ -211,7 +247,7 @@ export function ContactDetailsForm({
                       handleChange("supplierRank", parseInt(value))
                     }
                   >
-                    <SelectTrigger className="mt-1 bg-slate-50 dark:bg-slate-700">
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -223,16 +259,106 @@ export function ContactDetailsForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="industry" className="text-sm font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="industry" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                     Secteur d'Activité
                   </Label>
-                  <Input
-                    id="industry"
+                  <Select
                     value={contact.industry || ""}
-                    onChange={(e) => handleChange("industry", e.target.value)}
-                    placeholder="Secteur industriel"
-                    className="mt-1 bg-slate-50 dark:bg-slate-700"
+                    onValueChange={(value) => handleChange("industry", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {config.industries.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Location Section */}
+            <div className="bg-white dark:bg-slate-700 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-600">
+              <h3 className="text-base font-bold text-foreground mb-6 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                Localisation
+              </h3>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <Label htmlFor="region" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Région
+                  </Label>
+                  <Select
+                    value={contact.region || ""}
+                    onValueChange={(value) => handleChange("region", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {config.regions.map((region) => (
+                        <SelectItem key={region} value={region}>
+                          {region}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Ville
+                  </Label>
+                  <Select
+                    value={contact.city || ""}
+                    onValueChange={(value) => handleChange("city", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {config.cities.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Pays
+                  </Label>
+                  <Select
+                    value={contact.country || ""}
+                    onValueChange={(value) => handleChange("country", value)}
+                  >
+                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {config.countries.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    Code Postal
+                  </Label>
+                  <Input
+                    id="postalCode"
+                    value={contact.postalCode || ""}
+                    onChange={(e) => handleChange("postalCode", e.target.value)}
+                    placeholder="XXXXX"
+                    className="mt-1 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-600 dark:to-slate-700 border-slate-300 dark:border-slate-500 font-semibold h-10"
                   />
                 </div>
               </div>
@@ -655,7 +781,15 @@ export function ContactDetailsForm({
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => {
-                                  console.log("[v0] Save contact", editValues)
+                                  const updatedContacts = [...(contact.contacts || [])]
+                                  updatedContacts[index] = {
+                                    ...updatedContacts[index],
+                                    name: editValues.name,
+                                    function: editValues.function,
+                                    email: editValues.email,
+                                    phone: editValues.phone,
+                                  }
+                                  handleChange("contacts", updatedContacts)
                                   setEditingRowIndex(null)
                                 }}
                                 className="h-8 w-8 p-0"
@@ -699,7 +833,11 @@ export function ContactDetailsForm({
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => console.log("[v0] Delete contact", index)}
+                                onClick={() => {
+                                  const updatedContacts = [...(contact.contacts || [])]
+                                  updatedContacts.splice(index, 1)
+                                  handleChange("contacts", updatedContacts)
+                                }}
                                 className="h-8 w-8 p-0"
                               >
                                 <Trash2 className="h-4 w-4 text-red-500" />
@@ -718,61 +856,23 @@ export function ContactDetailsForm({
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Add New Contact Form */}
-            <div className="mt-6 rounded-lg border-2 border-blue-300 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900">
-              <h4 className="mb-4 font-semibold">Ajouter une Personne de Contact</h4>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="newContactName" className="text-sm font-medium">
-                    Nom
-                  </Label>
-                  <Input
-                    id="newContactName"
-                    placeholder="Nom et Prénom"
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newContactFunction" className="text-sm font-medium">
-                    Fonction
-                  </Label>
-                  <Input
-                    id="newContactFunction"
-                    placeholder="Directeur, Responsable, etc."
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newContactEmail" className="text-sm font-medium">
-                    Email
-                  </Label>
-                  <Input
-                    id="newContactEmail"
-                    type="email"
-                    placeholder="email@example.com"
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newContactPhone" className="text-sm font-medium">
-                    Téléphone
-                  </Label>
-                  <Input
-                    id="newContactPhone"
-                    placeholder="+212 XXX XX XX XX"
-                    className="mt-1 bg-white dark:bg-slate-800"
-                  />
-                </div>
+              {/* Add Row Button in Table Footer */}
+              <div className="border-t-2 border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-600 dark:bg-slate-700">
+                <Button
+                  size="sm"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => {
+                    const updatedContacts = [...(contact.contacts || []), { name: "", function: "", email: "", phone: "" }]
+                    handleChange("contacts", updatedContacts)
+                    // Auto-open edit mode for the new row
+                    setEditingRowIndex(updatedContacts.length - 1)
+                    setEditValues({ name: "", function: "", email: "", phone: "" })
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Ajouter une Personne de Contact
+                </Button>
               </div>
-              <Button
-                className="mt-4 gap-2 bg-blue-600 hover:bg-blue-700"
-                onClick={() => console.log("[v0] Add new contact")}
-              >
-                <Plus className="h-4 w-4" />
-                Ajouter
-              </Button>
             </div>
           </div>
         </TabsContent>

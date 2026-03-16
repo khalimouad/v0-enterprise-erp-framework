@@ -29,6 +29,9 @@ import {
   Calendar,
   Tag,
   MapPin,
+  Archive,
+  FileText,
+  Printer,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -59,7 +62,6 @@ import {
 import type { Contact } from "@/lib/types"
 import { contactTypeConfig, contactStatusConfig } from "@/lib/types"
 import type { ColorTheme } from "@/components/erp-header"
-import { AISearchInput } from "./ai-search-input"
 
 type ViewMode = "table" | "cards" | "kanban"
 
@@ -165,7 +167,10 @@ export function ContactsListView({
   const [activeFilters, setActiveFilters] = React.useState<ActiveFilter[]>([])
   const [filterPanelOpen, setFilterPanelOpen] = React.useState(false)
   const [typeFilter, setTypeFilter] = React.useState<string>("all")
-  const [pageSize, setPageSize] = React.useState(25)
+  const [pageSize, setPageSize] = React.useState(10)
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [editingPageRange, setEditingPageRange] = React.useState(false)
+  const [pageRangeInput, setPageRangeInput] = React.useState("1-10")
 
   // Apply filters
   const filteredContacts = React.useMemo(() => {
@@ -325,15 +330,18 @@ export function ContactsListView({
 
   return (
     <div className="flex flex-col h-full bg-card">
-      {/* Toolbar - Responsive */}
-      <div className="p-3 md:p-4 border-b border-border flex flex-col gap-3 md:gap-4">
-        {/* First row: AI Search and Quick Filters */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
-          {/* AI-Powered Search */}
-          <div className="w-full md:flex-1">
-            <AISearchInput
-              onSearch={(query) => setSearchQuery(query)}
-              placeholder="Search with AI..."
+      {/* Toolbar - All controls on one line */}
+      <div className="p-3 md:p-4 border-b border-border">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          {/* Normal Search Input */}
+          <div className="relative w-96 md:max-w-xl">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-sm"
             />
           </div>
 
@@ -342,23 +350,20 @@ export function ContactsListView({
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 w-full md:w-auto"
+              className="gap-2 h-8"
               onClick={onOpenFilters}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">Filtres</span>
+              <span className="hidden sm:inline text-xs md:text-sm">Filters</span>
             </Button>
           )}
-        </div>
 
-        {/* Second row: Additional controls (Columns, Type filter, etc) */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {/* Columns Button */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 text-xs md:text-sm">
+              <Button variant="outline" size="sm" className="gap-2 text-xs md:text-sm h-8">
                 <Columns className="h-4 w-4" />
-                Columns
+                <span className="hidden sm:inline">Columns</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[200px]">
@@ -375,10 +380,7 @@ export function ContactsListView({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
 
-        {/* View Mode Toggle & Actions */}
-        <div className="flex items-center gap-2">
           {/* View Mode Buttons */}
           <div className="flex items-center border border-border rounded-lg p-1 bg-muted/30">
             <Button
@@ -386,6 +388,7 @@ export function ContactsListView({
               size="sm"
               className={cn("h-7 px-2", viewMode === "table" && getAccentBgClass())}
               onClick={() => setViewMode("table")}
+              title="Table view"
             >
               <List className={cn("h-4 w-4", viewMode === "table" && getAccentTextClass())} />
             </Button>
@@ -394,6 +397,7 @@ export function ContactsListView({
               size="sm"
               className={cn("h-7 px-2", viewMode === "cards" && getAccentBgClass())}
               onClick={() => setViewMode("cards")}
+              title="Cards view"
             >
               <LayoutGrid className={cn("h-4 w-4", viewMode === "cards" && getAccentTextClass())} />
             </Button>
@@ -402,17 +406,24 @@ export function ContactsListView({
               size="sm"
               className={cn("h-7 px-2", viewMode === "kanban" && getAccentBgClass())}
               onClick={() => setViewMode("kanban")}
+              title="Kanban view"
             >
               <Kanban className={cn("h-4 w-4", viewMode === "kanban" && getAccentTextClass())} />
             </Button>
           </div>
 
-          <Button variant="outline" size="icon">
-            <Download className="h-4 w-4" />
-          </Button>
-          <Button size="sm" className={cn("gap-2", getAccentClass())} onClick={onCreateContact}>
+          {/* Spacer to push create and download to the right */}
+          <div className="flex-1" />
+
+          {/* Create Contact Button */}
+          <Button size="sm" className={cn("gap-2 h-8", getAccentClass())} onClick={onCreateContact}>
             <Plus className="h-4 w-4" />
-            Create Contact
+            <span className="hidden sm:inline">Create Contact</span>
+          </Button>
+
+          {/* Download/Quick Action Button */}
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" title="Download">
+            <Download className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -461,6 +472,97 @@ export function ContactsListView({
         ))}
       </div>
 
+      {/* Quick Actions Bar - Shown when contacts are selected */}
+      {selectedRows.size > 0 && (
+        <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground">
+            {selectedRows.size} contact{selectedRows.size > 1 ? "s" : ""} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Export as CSV"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                exportToCSV(selected)
+              }}
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">CSV</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Export as PDF"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                exportToPDF(selected)
+              }}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">PDF</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Print"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                printContacts(selected)
+              }}
+            >
+              <Printer className="h-4 w-4" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
+            <div className="w-px h-6 bg-border" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+              title="Archive"
+              onClick={() => {
+                const selected = Array.from(selectedRows).map(id => 
+                  filteredContacts.find(c => c.id === id)
+                ).filter(Boolean) as Contact[]
+                archiveContacts(selected)
+                setSelectedRows(new Set())
+              }}
+            >
+              <Archive className="h-4 w-4" />
+              <span className="hidden sm:inline">Archive</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+              title="Delete"
+              onClick={() => {
+                if (confirm(`Are you sure you want to delete ${selectedRows.size} contact${selectedRows.size > 1 ? "s" : ""}?`)) {
+                  const selected = Array.from(selectedRows).map(id => 
+                    filteredContacts.find(c => c.id === id)
+                  ).filter(Boolean) as Contact[]
+                  deleteContacts(selected)
+                  setSelectedRows(new Set())
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Content Area */}
       <div className="flex-1 overflow-auto">
         {viewMode === "table" && (
@@ -505,22 +607,90 @@ export function ContactsListView({
           )}
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span>Items per page:</span>
-            <Input
-              type="number"
-              min="1"
-              value={pageSize}
-              onChange={(e) => setPageSize(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-16 h-8"
-            />
-          </div>
-          <span>1-{Math.min(pageSize, filteredContacts.length)} of {filteredContacts.length}</span>
+          {editingPageRange ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
+              <label className="text-xs font-semibold text-foreground">Range:</label>
+              <Input
+                type="text"
+                value={pageRangeInput}
+                onChange={(e) => setPageRangeInput(e.target.value)}
+                placeholder="1-10"
+                className="w-20 h-8 text-sm font-semibold border-blue-300"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const match = pageRangeInput.match(/(\d+)-(\d+)/)
+                    if (match) {
+                      const start = parseInt(match[1])
+                      const end = parseInt(match[2])
+                      if (start > 0 && end >= start && end <= filteredContacts.length) {
+                        setPageSize(end - start + 1)
+                        setCurrentPage(1)
+                      }
+                    }
+                    setEditingPageRange(false)
+                  } else if (e.key === "Escape") {
+                    setEditingPageRange(false)
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  const match = pageRangeInput.match(/(\d+)-(\d+)/)
+                  if (match) {
+                    const start = parseInt(match[1])
+                    const end = parseInt(match[2])
+                    if (start > 0 && end >= start && end <= filteredContacts.length) {
+                      setPageSize(end - start + 1)
+                      setCurrentPage(1)
+                    }
+                  }
+                  setEditingPageRange(false)
+                }}
+              >
+                Save
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-3"
+                onClick={() => setEditingPageRange(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                const start = (currentPage - 1) * pageSize + 1
+                const end = Math.min(currentPage * pageSize, filteredContacts.length)
+                setPageRangeInput(`${start}-${end}`)
+                setEditingPageRange(true)
+              }}
+              className="px-4 py-2 rounded-lg border border-border hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all cursor-pointer font-semibold text-foreground"
+            >
+              {Math.max(1, (currentPage - 1) * pageSize + 1)}-{Math.min(currentPage * pageSize, filteredContacts.length)} of {filteredContacts.length}
+            </button>
+          )}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={currentPage * pageSize >= filteredContacts.length}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -922,4 +1092,141 @@ function KanbanView({
       })}
     </div>
   )
+}
+
+// Helper functions for quick actions
+function exportToCSV(contacts: Contact[]) {
+  if (contacts.length === 0) return
+  
+  const headers = ["Name", "Email", "Phone", "Country", "City", "Type", "Status", "Industry"]
+  const rows = contacts.map(c => [
+    c.name,
+    c.email,
+    c.phone,
+    c.country || "",
+    c.city || "",
+    c.type || "",
+    c.status || "",
+    c.industry || "",
+  ])
+  
+  const csvContent = [
+    headers.join(","),
+    ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
+  ].join("\n")
+  
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(blob)
+  link.download = `contacts_${new Date().toISOString().split("T")[0]}.csv`
+  link.click()
+}
+
+function exportToPDF(contacts: Contact[]) {
+  if (contacts.length === 0) return
+  
+  const doc = document.createElement("div")
+  doc.innerHTML = `
+    <style>
+      body { font-family: Arial, sans-serif; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+      th { background-color: #f2f2f2; font-weight: bold; }
+      h1 { color: #333; }
+    </style>
+    <h1>Contacts Report</h1>
+    <p>Generated on ${new Date().toLocaleDateString()}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Country</th>
+          <th>City</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${contacts.map(c => `
+          <tr>
+            <td>${c.name}</td>
+            <td>${c.email}</td>
+            <td>${c.phone}</td>
+            <td>${c.country || "-"}</td>
+            <td>${c.city || "-"}</td>
+            <td>${c.type || "-"}</td>
+            <td>${c.status || "-"}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `
+  
+  const newWindow = window.open("", "", "width=800,height=600")
+  if (newWindow) {
+    newWindow.document.write(doc.innerHTML)
+    newWindow.document.close()
+    setTimeout(() => newWindow.print(), 250)
+  }
+}
+
+function printContacts(contacts: Contact[]) {
+  if (contacts.length === 0) return
+  
+  const doc = document.createElement("div")
+  doc.innerHTML = `
+    <style>
+      @media print {
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+      }
+    </style>
+    <h2>Contacts List</h2>
+    <p>Printed on ${new Date().toLocaleDateString()}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Location</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${contacts.map(c => `
+          <tr>
+            <td>${c.name}</td>
+            <td>${c.email}</td>
+            <td>${c.phone}</td>
+            <td>${c.city ? c.city + (c.country ? ", " + c.country : "") : c.country || "-"}</td>
+            <td>${c.type || "-"}</td>
+            <td>${c.status || "-"}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `
+  
+  const newWindow = window.open("", "", "width=800,height=600")
+  if (newWindow) {
+    newWindow.document.write(doc.innerHTML)
+    newWindow.document.close()
+    setTimeout(() => newWindow.print(), 250)
+  }
+}
+
+function archiveContacts(contacts: Contact[]) {
+  console.log("[v0] Archiving", contacts.length, "contact(s)")
+  // TODO: Implement archive functionality - update contact status in database
+}
+
+function deleteContacts(contacts: Contact[]) {
+  console.log("[v0] Deleting", contacts.length, "contact(s)")
+  // TODO: Implement delete functionality - remove contacts from database
 }
